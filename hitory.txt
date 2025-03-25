@@ -1,0 +1,13 @@
+
+
+npx shadcn@latest init 
+npx shadcn@latest add form input label navigation-menu select sidebar table textarea slider tabs  
+
+npm i dotenv @reduxjs/toolkit react-redux
+
+npm i framer-motion
+npm i tailwindcss-animate
+
+
+npm i lucide-react //icon
+npm i sonner //toast
