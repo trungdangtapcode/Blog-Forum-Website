@@ -2,23 +2,13 @@
 
 import { useRef } from "react";
 import { TypedUseSelectorHook, useDispatch, useSelector } from "react-redux";
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { combineReducers, configureStore } from "@reduxjs/toolkit";
 import { Provider } from "react-redux";
 import { setupListeners } from "@reduxjs/toolkit/query";
-// import globalReducer from "@/state";
-// import { api } from "@/state/api";
+import globalReducer from "@/state";
+import { api } from "@/state/api";
 
 /* REDUX STORE */
-
-const api = {
-	  reducerPath: "api",
-  reducer: () => {},
-  middleware: () => {},
-};
-const globalReducer = () => {};
-
-
 const rootReducer = combineReducers({
   global: globalReducer,
   [api.reducerPath]: api.reducer,
@@ -27,8 +17,8 @@ const rootReducer = combineReducers({
 export const makeStore = () => {
   return configureStore({
     reducer: rootReducer,
-    // middleware: (getDefaultMiddleware) =>
-    //   getDefaultMiddleware().concat(api.middleware),
+    middleware: (getDefaultMiddleware) =>
+      getDefaultMiddleware().concat(api.middleware),
   });
 };
 

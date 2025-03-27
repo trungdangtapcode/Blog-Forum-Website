@@ -3,6 +3,69 @@
 
 @custom-variant dark (&:is(.dark *));
 
+@theme {
+  --color-background: oklch(var(--background));
+  --color-foreground: oklch(var(--foreground));
+
+  --color-card: oklch(var(--card));
+  --color-card-foreground: oklch(var(--card-foreground));
+
+  --color-popover: oklch(var(--popover));
+  --color-popover-foreground: oklch(var(--popover-foreground));
+
+  --color-primary-50: #fcfcfc;
+  --color-primary-100: #f1f1f2;
+  --color-primary-200: #e0e0e2;
+  --color-primary-300: #c7c7cc;
+  --color-primary-400: #a8a8af;
+  --color-primary-500: #82828b;
+  --color-primary-600: #57575f;
+  --color-primary-700: #27272a;
+  --color-primary-800: #111113;
+  --color-primary-900: #040405;
+  --color-primary-950: #000000;
+
+  --color-secondary-50: #fefcfc;
+  --color-secondary-100: #fdf2f2;
+  --color-secondary-200: #fae1e1;
+  --color-secondary-300: #f6c9c9;
+  --color-secondary-400: #f1abab;
+  --color-secondary-500: #eb8686;
+  --color-secondary-600: #e45a5a;
+  --color-secondary-700: #dc2828;
+  --color-secondary-800: #7c1414;
+  --color-secondary-900: #400a0a;
+  --color-secondary-950: #2c0707;
+
+  --color-muted: oklch(var(--muted));
+  --color-muted-foreground: oklch(var(--muted-foreground));
+
+  --color-accent: oklch(var(--accent));
+  --color-accent-foreground: oklch(var(--accent-foreground));
+
+  --color-destructive: oklch(var(--destructive));
+  --color-destructive-foreground: oklch(var(--destructive-foreground));
+
+  --color-border: oklch(var(--border));
+  --color-input: oklch(var(--input));
+  --color-ring: oklch(var(--ring));
+
+  --color-chart-1: oklch(var(--chart-1));
+  --color-chart-2: oklch(var(--chart-2));
+  --color-chart-3: oklch(var(--chart-3));
+  --color-chart-4: oklch(var(--chart-4));
+  --color-chart-5: oklch(var(--chart-5));
+
+  --color-sidebar: oklch(var(--sidebar-background));
+  --color-sidebar-foreground: oklch(var(--sidebar-foreground));
+  --color-sidebar-primary: oklch(var(--sidebar-primary));
+  --color-sidebar-primary-foreground: oklch(var(--sidebar-primary-foreground));
+  --color-sidebar-accent: oklch(var(--sidebar-accent));
+  --color-sidebar-accent-foreground: oklch(var(--sidebar-accent-foreground));
+  --color-sidebar-border: oklch(var(--sidebar-border));
+  --color-sidebar-ring: oklch(var(--sidebar-ring));
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);

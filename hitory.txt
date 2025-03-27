@@ -11,3 +11,11 @@ npm i tailwindcss-animate
 
 npm i lucide-react //icon
 npm i sonner //toast
+npm i aws-amplify
+
+
+
+
+daisy ui
+flowy
+tailwind prefix
