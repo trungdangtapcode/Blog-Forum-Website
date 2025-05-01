@@ -27,8 +27,9 @@
 	  {
 		"label": "Terminal 1",
 		"type": "shell",
+		// "command": "start cmd.exe /K cd /D \"${workspaceFolder}\\dir1\"",
 		"command": "cmd.exe",
-		"args": ["/K", "echo Terminal 1"],
+		"args": ["/K", "npm run dev"],
 		"options": {
 		  "cwd": "${workspaceFolder}/next-web"
 		},
@@ -49,14 +50,14 @@
 		"isBackground": true,
 		"problemMatcher": [],
 		"presentation": {
-		  "group": "project-terminals"
+		  "reveal": "never"
 		}
 	  },
 	  {
 		"label": "Terminal 3",
 		"type": "shell",
 		"command": "cmd.exe",
-		"args": ["/K", "echo Terminal 3"],
+		"args": ["/K", "npm run start:dev"],
 		"options": {
 		  "cwd": "${workspaceFolder}/dispatch"
 		},
@@ -77,7 +78,7 @@
 		"isBackground": true,
 		"problemMatcher": [],
 		"presentation": {
-		  "group": "project-terminals"
+		  "reveal": "never"
 		}
 	  }
 	]
