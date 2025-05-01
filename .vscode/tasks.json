@@ -1,0 +1,84 @@
+{
+	"version": "2.0.0",
+	"presentation": {
+	  "echo": false,
+	  "reveal": "always",
+	  "focus": false,
+	  "panel": "dedicated",
+	  "showReuseMessage": false
+	},
+	"tasks": [
+	  {
+		"label": "My custom terminal snippet",
+		"dependsOn": [
+		  "Terminal 1",
+		  "Terminal 2",
+		  "Terminal 3",
+		  "Terminal 4"
+		],
+		"group": {
+		  "kind": "build",
+		  "isDefault": true
+		},
+		"runOptions": {
+		  "runOn": "folderOpen"
+		}
+	  },
+	  {
+		"label": "Terminal 1",
+		"type": "shell",
+		"command": "cmd.exe",
+		"args": ["/K", "echo Terminal 1"],
+		"options": {
+		  "cwd": "${workspaceFolder}/next-web"
+		},
+		"isBackground": true,
+		"problemMatcher": [],
+		"presentation": {
+		  "group": "project-terminals"
+		}
+	  },
+	  {
+		"label": "Terminal 2",
+		"type": "shell",
+		"command": "cmd.exe",
+		"args": ["/K", "echo Terminal 2"],
+		"options": {
+		  "cwd": "${workspaceFolder}/next-web"
+		},
+		"isBackground": true,
+		"problemMatcher": [],
+		"presentation": {
+		  "group": "project-terminals"
+		}
+	  },
+	  {
+		"label": "Terminal 3",
+		"type": "shell",
+		"command": "cmd.exe",
+		"args": ["/K", "echo Terminal 3"],
+		"options": {
+		  "cwd": "${workspaceFolder}/dispatch"
+		},
+		"isBackground": true,
+		"problemMatcher": [],
+		"presentation": {
+		  "group": "project-terminals"
+		}
+	  },
+	  {
+		"label": "Terminal 4",
+		"type": "shell",
+		"command": "cmd.exe",
+		"args": ["/K", "echo Terminal 4"],
+		"options": {
+		  "cwd": "${workspaceFolder}/dispatch"
+		},
+		"isBackground": true,
+		"problemMatcher": [],
+		"presentation": {
+		  "group": "project-terminals"
+		}
+	  }
+	]
+  }
