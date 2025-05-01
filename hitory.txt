@@ -12,7 +12,8 @@ npm i tailwindcss-animate
 npm i lucide-react //icon
 npm i sonner //toast
 npm i aws-amplify
-npm i react-typing-effect (quick fix: install all missing package)
+npm i react-typing-effect (quick fix: install all missing package) //no long support
+
 
 
 

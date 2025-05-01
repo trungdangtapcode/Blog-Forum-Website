@@ -19,7 +19,7 @@ const HeroSection = () => {
 			fill
 			priority //load first
 		/>
-		<div className='absolute inset-0 bg-black/40'>
+		<div className='absolute inset-0 bg-gradient-to-t from-black/80 to-black/20'>
 		{/* opactity in v3/2 is bg-opacity-50 */}
 			<motion.div 
 				initial={{opacity: 0, y: 20}}

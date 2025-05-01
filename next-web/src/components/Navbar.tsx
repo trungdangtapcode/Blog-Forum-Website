@@ -17,8 +17,8 @@ const Navbar = () => {
 				<div className='flex items-center gap-3'>
 					<Image
 						src="/watablog_logo.png"
-						width={40}
-						height={16}
+						width={400}
+						height={160}
 						alt="WataBlog logo"
 						className="w-18 h-8 rounded-lg"
 					/>
