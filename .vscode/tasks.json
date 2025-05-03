@@ -36,7 +36,7 @@
 		"isBackground": true,
 		"problemMatcher": [],
 		"presentation": {
-		  "group": "project-terminals"
+		  "group": "project-terminals-1"
 		}
 	  },
 	  {
@@ -50,7 +50,8 @@
 		"isBackground": true,
 		"problemMatcher": [],
 		"presentation": {
-		  "reveal": "never"
+		//   "reveal": "never",
+		  "group": "project-terminals-1"
 		}
 	  },
 	  {
@@ -64,7 +65,7 @@
 		"isBackground": true,
 		"problemMatcher": [],
 		"presentation": {
-		  "group": "project-terminals"
+		  "group": "project-terminals-2"
 		}
 	  },
 	  {
@@ -78,7 +79,8 @@
 		"isBackground": true,
 		"problemMatcher": [],
 		"presentation": {
-		  "reveal": "never"
+		//   "reveal": "never",
+			"group": "project-terminals-2"
 		}
 	  }
 	]

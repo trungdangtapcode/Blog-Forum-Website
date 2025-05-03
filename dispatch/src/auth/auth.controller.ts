@@ -21,7 +21,7 @@ export class AuthController {
     @Post("/login")
     @UseGuards(LocalGuard)
     @UseFilters(new MongoExceptionFilter())
-    verifyUser(@Req() req: Request){
+    verifyUser(@Req() req: Request & { user: any }){
         console.log('In Verify User (Controller)');
         return req.user;
     }

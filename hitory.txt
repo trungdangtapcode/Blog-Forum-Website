@@ -13,7 +13,7 @@ npm i lucide-react //icon
 npm i sonner //toast
 npm i aws-amplify
 npm i react-typing-effect (quick fix: install all missing package) //no long support
-
+npm i @auth0/nextjs-auth0
 
 
 
@@ -22,3 +22,5 @@ flowy
 tailwind prefix
 zustand
 cssposition (static, relative, absolute, fixed)
+flowbite
+Oauth
