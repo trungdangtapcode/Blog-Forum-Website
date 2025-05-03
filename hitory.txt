@@ -24,3 +24,6 @@ zustand
 cssposition (static, relative, absolute, fixed)
 flowbite
 Oauth
+
+hmr webpack
+nodemon
