@@ -1,49 +1,28 @@
-import { Schema, Document } from 'mongoose';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Document } from 'mongoose';
 
-// Define the interface for TypeScript type safety
-export interface AccountProfile extends Document {
+@Schema()
+export class AccountProfile extends Document {
+  @Prop({ type: String, required: true, unique: true })
+  email: string;
+
+  @Prop({ type: String, maxlength: 1048576, required: false })
   avatar?: string;
-  fullName: string;
+
+  @Prop({ type: String, maxlength: 50, required: false })
+  fullName?: string;
+
+  @Prop({ type: String, maxlength: 500, required: false })
   bio?: string;
+
+  @Prop({ type: Number, min: 0, required: false })
   age?: number;
+
+  @Prop({ type: String, maxlength: 100, required: false })
   location?: string;
+
+  @Prop({ type: String, maxlength: 100, required: false })
   occupation?: string;
 }
 
-// Create the Mongoose schema
-export const AccountProfileSchema = new Schema<AccountProfile>({
-  avatar: {
-    type: String,
-    required: false, // @IsOptional()
-    maxlength: 255, // @MaxLength(255)
-  },
-  fullName: {
-    type: String,
-    required: true, // @IsNotEmpty()
-    maxlength: 50, // @MaxLength(50)
-  },
-  bio: {
-    type: String,
-    required: false, // @IsOptional()
-    maxlength: 500, // @MaxLength(500)
-  },
-  age: {
-    type: Number,
-    required: false, // @IsOptional()
-    min: 0, // @Min(0)
-  },
-  location: {
-    type: String,
-    required: false, // @IsOptional()
-    maxlength: 100, // @MaxLength(100)
-  },
-  occupation: {
-    type: String,
-    required: false, // @IsOptional()
-    maxlength: 100, // @MaxLength(100)
-  },
-}, {
-  timestamps: true, // Optional: adds createdAt and updatedAt fields
-});
-
-// Export the schema for use in your Mongoose model
+export const AccountProfileSchema = SchemaFactory.createForClass(AccountProfile);

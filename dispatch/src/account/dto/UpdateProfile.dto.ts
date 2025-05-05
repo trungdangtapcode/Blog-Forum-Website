@@ -1,13 +1,17 @@
-import { IsString, IsInt, IsNotEmpty, MaxLength, Min, IsOptional } from 'class-validator';
+import { IsString, IsInt, IsNotEmpty, MaxLength, Min, IsOptional, IsEmail } from 'class-validator';
 
-export class UserProfileDto {
+export class UpdateProfileDto {
+  @IsEmail()
+  @IsNotEmpty()
+  email: string
+
   @IsString()
   @IsOptional()
-  @MaxLength(255)
+  @MaxLength(1048576)
   avatar: string;
 
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   @MaxLength(50)
   fullName: string;
 

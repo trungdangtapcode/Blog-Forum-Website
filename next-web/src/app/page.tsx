@@ -1,10 +1,10 @@
 import { auth0 } from "@/lib/auth0";
 import './globals.css';
 
+
 export default async function Home() {
   // Fetch the user session
   const session = await auth0.getSession();
-
   // If no session, show sign-up and login buttons
   if (!session) {
     return (
@@ -19,7 +19,7 @@ export default async function Home() {
     );
   }
 
-  console.log(session)
+  // console.log(session)
 
   // If session exists, show a welcome message and logout button
   return (
