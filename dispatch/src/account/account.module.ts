@@ -6,6 +6,7 @@ import { PassportModule } from '@nestjs/passport';
 import { Auth0Strategy } from './strategies/auth0.strategy';
 import { MongooseModule } from '@nestjs/mongoose';
 import { AccountProfile, AccountProfileSchema } from './accountProfile.chema';
+import { Auth0Guard } from './guards/auth0.guard';
 
 @Module({
     imports:[
@@ -20,11 +21,11 @@ import { AccountProfile, AccountProfileSchema } from './accountProfile.chema';
 		JwtModule.register({})
     ],
     providers:[
-        AccountService,  Auth0Strategy
+        AccountService,  Auth0Strategy, Auth0Guard
     ]
     ,
     controllers: [AccountController],
-    exports: [AccountService]
+    exports: [AccountService, Auth0Guard]
 })
 
 export class AccountModule {};

@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-html-link-for-pages */
 import { auth0 } from "@/lib/auth0";
 import './globals.css';
 

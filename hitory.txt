@@ -23,7 +23,8 @@ tailwind prefix
 zustand
 cssposition (static, relative, absolute, fixed)
 flowbite
-Oauth
+Oauth2
+@nestjs/mapped-types
 
 hmr webpack
 nodemon
