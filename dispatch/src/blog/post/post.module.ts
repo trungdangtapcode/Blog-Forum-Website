@@ -4,6 +4,7 @@ import { PostController } from './post.controller';
 import { PostService } from './post.service';
 import { Post, PostSchema } from './post.chema';
 import { AccountModule } from '@/account/account.module';
+import { Like, LikeSchema } from './like.schema';
 // import { Auth0Guard } from 'src/account/guards/auth0.guard';
 // import { APP_GUARD } from '@nestjs/core';
 
@@ -11,6 +12,7 @@ import { AccountModule } from '@/account/account.module';
   imports: [
 	AccountModule,
     MongooseModule.forFeature([{ name: Post.name, schema: PostSchema }]),
+    MongooseModule.forFeature([{ name: Like.name, schema: LikeSchema }]),
   ],
   controllers: [PostController],
   providers: [

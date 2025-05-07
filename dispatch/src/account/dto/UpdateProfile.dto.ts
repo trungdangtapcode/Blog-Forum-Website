@@ -8,30 +8,30 @@ export class UpdateProfileDto {
   @IsString()
   @IsOptional()
   @MaxLength(1048576)
-  avatar: string;
+  avatar: string = "";
 
   @IsString()
   @IsOptional()
   @MaxLength(50)
-  fullName: string;
+  fullName: string = "";
 
   @IsString()
   @IsOptional()
   @MaxLength(500)
-  bio: string;
+  bio: string = "";
 
   @IsInt()
   @Min(0)
   @IsOptional()
-  age: number;
+  age: number = 0;
 
   @IsString()
   @IsOptional()
   @MaxLength(100)
-  location: string;
+  location: string = "";
 
   @IsString()
   @IsOptional()
   @MaxLength(100)
-  occupation: string;
+  occupation: string = "";
 }

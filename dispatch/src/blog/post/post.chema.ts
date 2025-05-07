@@ -9,7 +9,7 @@ export class Post extends Document {
   @Prop({ required: true })
   content: string;
 
-  @Prop({ ref: 'User' })
+  @Prop({ ref: 'AccountProfile' })
   author: string;
 
   @Prop({ default: 0 })

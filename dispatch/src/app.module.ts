@@ -5,7 +5,7 @@ import { AuthModule } from './auth/auth.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigModule} from '@nestjs/config';
 import { AccountModule } from './account/account.module';
-import { PostModule } from './post/post.module';
+import { PostModule } from './blog/post/post.module';
 
 @Module({
   imports: [

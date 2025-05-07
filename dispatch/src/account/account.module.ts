@@ -8,6 +8,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { AccountProfile, AccountProfileSchema } from './accountProfile.chema';
 import { Auth0Guard } from './guards/auth0.guard';
 
+//account ~ profile ~ user
 @Module({
     imports:[
         PassportModule,

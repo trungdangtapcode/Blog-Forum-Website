@@ -13,7 +13,7 @@ export class AccountService {
         public profileModel: Model<AccountProfile>
     ) {}
 
-	async updateProfile(email: string, profileData: UpdateProfileDto){
+	async updateProfile(email: string, profileData: Partial<UpdateProfileDto>){
 		// console.log('Inside Account Service', email, profileData);
 		const profile = await this.profileModel.findOne({email: email});
 		console.log('con me')
@@ -31,12 +31,13 @@ export class AccountService {
 		return {message: "Profile Updated"};
 	}
 
-	async getProfile(email: string){
+	async getProfile(email: string): Promise<AccountProfile> {
 		const profile = await this.profileModel.findOne({email: email});
 		if(profile){
 			return profile;
 		} else {
-			return {message: "Profile not found"};
+			this.updateProfile(email, {email: email});
+			return this.getProfile(email);
 		}
 	}
 
