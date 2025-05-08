@@ -3,7 +3,7 @@ import { PostService } from './post.service';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { Auth0Guard } from '@/account/guards/auth0.guard';
-import { PostIdDto } from './dto/create-like.dto';
+import { CreateLikeDto } from './dto/create-like.dto';
 import { Request } from 'express';
 import { use } from 'passport';
 import { AccountService } from '@/account/account.service';
@@ -47,18 +47,18 @@ export class PostController {
   @Put('like')
   @UsePipes(new ValidationPipe())
   @UseGuards(Auth0Guard)
-  async like(@Req() req: Request & { user: any }, @Body() dto: PostIdDto) {
+  async like(@Req() req: Request & { user: any }, @Body() dto: CreateLikeDto) {
     const email = req.user.email;
     const profile: AccountProfile = await this.accountService.getProfile(email);
     const userId = profile._id as string;
     const postId = dto.post;
-    return this.postService.likePost(userId, postId);
+    return this.postService.likePost(userId, postId, dto.action);
   }
 
   @Delete('like')
   @UsePipes(new ValidationPipe())
   @UseGuards(Auth0Guard)
-  async unlike(@Req() req: Request & { user: any }, @Body() dto: PostIdDto) {
+  async unlike(@Req() req: Request & { user: any }, @Body() dto: Partial<CreateLikeDto>) {
     const email = req.user.email;
     const profile: AccountProfile = await this.accountService.getProfile(email);
     const userId = profile._id as string;
@@ -67,7 +67,7 @@ export class PostController {
   }
 
   @Get('like')
-  async countLikes(@Body() dto: PostIdDto) {
+  async countLikes(@Body() dto: CreateLikeDto) {
     const postId = dto.post;
     return { count: await this.postService.countLikes(postId) };
   }
