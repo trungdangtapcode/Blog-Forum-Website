@@ -1,4 +1,5 @@
-import { auth0 } from "@/lib/auth0";
+import { auth0Client } from "@/lib/auth0-client";
+import { DISPATCH_URL } from "@/lib/config";
 import axios from "axios";
 
 export interface Post {
@@ -25,7 +26,7 @@ export interface CreatePostInput {
 export async function getPosts() {
   try {
     const response = await axios.get(
-      `${process.env.NEXT_PUBLIC_DISPATCH_URL}/post/get` || 'https://example.com'
+      `${DISPATCH_URL}/post/get`
     );
     
     if (response.status >= 200 && response.status < 300) {
@@ -41,7 +42,7 @@ export async function getPosts() {
 export async function getPostById(id: string) {
   try {
     const response = await axios.get(
-      `${process.env.NEXT_PUBLIC_DISPATCH_URL}/post/get/${id}` || 'https://example.com'
+      `${DISPATCH_URL}/post/get/${id}`
     );
     
     if (response.status >= 200 && response.status < 300) {
@@ -55,11 +56,10 @@ export async function getPostById(id: string) {
 }
 
 export async function createPost(postData: CreatePostInput) {
-  const session = await auth0.getAccessToken();
-  if (!session) {
+  const token = await auth0Client.getToken();
+  if (!token) {
     throw new Error('Session not found');
   }
-  const token = session.token;
 
   try {
     const response = await axios.post(
@@ -84,11 +84,10 @@ export async function createPost(postData: CreatePostInput) {
 }
 
 export async function likePost(postId: string, action: 'like' | 'dislike') {
-  const session = await auth0.getAccessToken();
-  if (!session) {
+  const token = await auth0Client.getToken();
+  if (!token) {
     throw new Error('Session not found');
   }
-  const token = session.token;
 
   try {
     const response = await axios.put(
@@ -113,11 +112,10 @@ export async function likePost(postId: string, action: 'like' | 'dislike') {
 }
 
 export async function unlikePost(postId: string) {
-  const session = await auth0.getAccessToken();
-  if (!session) {
+  const token = await auth0Client.getToken();
+  if (!token) {
     throw new Error('Session not found');
   }
-  const token = session.token;
 
   try {
     const response = await axios.delete(
@@ -142,11 +140,10 @@ export async function unlikePost(postId: string) {
 }
 
 export async function isPostLiked(postId: string) {
-  const session = await auth0.getAccessToken();
-  if (!session) {
+  const token = await auth0Client.getToken();
+  if (!token) {
     return null;
   }
-  const token = session.token;
 
   try {
     const response = await axios.get(
