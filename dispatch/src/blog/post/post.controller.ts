@@ -71,4 +71,14 @@ export class PostController {
     const postId = dto.post;
     return { count: await this.postService.countLikes(postId) };
   }
+
+  @Get('isliked')
+  @UseGuards(Auth0Guard)
+  async isLiked(@Req() req: Request & { user: any }, @Body() dto: Partial<CreateLikeDto>) {
+    const email = req.user.email;
+    const profile: AccountProfile = await this.accountService.getProfile(email);
+    const userId = profile._id as string;
+    const postId = dto.post;
+    return this.postService.isLiked(userId, postId);
+  }
 }

@@ -66,4 +66,12 @@ export class PostService {
   async countLikes(postId: string): Promise<number> {
     return this.likeModel.countDocuments({ post: postId });
   }
+
+  async isLiked(userId: string, postId: string) {
+    const like = await this.likeModel.findOne({ user: userId, post: postId });
+    if (like){
+      return {action: like.action};
+    }
+    return null;
+  }
 }
