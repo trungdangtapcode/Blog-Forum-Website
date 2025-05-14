@@ -8,7 +8,8 @@ import { getProfile } from '@/utils/fetching';
 const Navbar = async ()=>{
 	const session = await auth0.getSession();
 	const isLoggedIn = !!session;
-	const accountProfile = await getProfile()
+	// Only fetch profile if user is logged in
+	const accountProfile = await getProfile();
 	console.log('Navbar', session)
 	return (
 		<NavbarClient

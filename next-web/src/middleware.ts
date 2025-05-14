@@ -4,6 +4,8 @@ import { auth0 } from "./lib/auth0";
 export async function middleware(request: NextRequest) {
   const authRes = await auth0.middleware(request);
 
+  console.log('Youre in middleware')
+
   // Authentication routes — let the Auth0 middleware handle it.
   if (request.nextUrl.pathname.startsWith('/auth')) {
     return authRes;
@@ -18,8 +20,11 @@ export async function middleware(request: NextRequest) {
   const { origin } = new URL(request.url);
   const session = await auth0.getSession();
 
+  // console.log('current session (middleware):', session)
+
   // User does not have a session — redirect to login.
   if (!session) {
+    // console.log('(middleware) not logged in')
     return NextResponse.redirect(`${origin}/auth/login`);
   }
   return authRes;

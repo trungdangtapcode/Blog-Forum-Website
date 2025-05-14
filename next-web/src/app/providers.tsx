@@ -4,6 +4,7 @@
 import StoreProvider from "@/state/redux"
 // import { UserProvider } from '@auth0/nextjs-auth0/client';
 import { Auth0Provider } from "@auth0/nextjs-auth0"
+import { ToastProvider } from "@/components/ui/toast";
 
 const Providers = (
 	{children}: {
@@ -12,7 +13,9 @@ const Providers = (
 	return (
 		<StoreProvider>
 			<Auth0Provider>
+			<ToastProvider>
 			{children}
+			</ToastProvider>
 			</Auth0Provider>
 		</StoreProvider>
 	)
