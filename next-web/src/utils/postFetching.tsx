@@ -30,7 +30,7 @@ export async function getPosts() {
     );
     
     if (response.status >= 200 && response.status < 300) {
-      console.log('Response:', response);
+      // console.log('Response:', response);
       const fetchedPosts: Post[] = response.data;
       if (fetchedPosts){
         // reverse the list

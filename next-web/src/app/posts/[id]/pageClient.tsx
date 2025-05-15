@@ -116,10 +116,10 @@ const PostDetailClient: FC<PostDetailClientProps> = ({ params }) => {
       toast.error("Failed to register your reaction. Please try again.");
     }
   };
-
   if (loading) {
     return (
-      <div className="container mx-auto px-4 py-10 max-w-4xl">
+      <div className="container mx-auto px-4 py-10 max-w-4xl ">
+        <Skeleton className="h-[125px] w-[250px] rounded-xl mb-4" />
         <Skeleton className="h-12 w-3/4 mb-4" />
         <Skeleton className="h-6 w-1/4 mb-8" />
         <Skeleton className="h-64 w-full mb-8" />

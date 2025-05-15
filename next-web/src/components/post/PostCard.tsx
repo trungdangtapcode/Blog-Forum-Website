@@ -9,8 +9,13 @@ import { ThumbsUp, MessageCircle, Clock, Tag } from "lucide-react";
 import { formatDistanceToNow } from 'date-fns/formatDistanceToNow'
 import { Badge } from "@/components/ui/badge";
 
+// Extend the Post type to include authorAvatar
+interface ExtendedPost extends Post {
+  authorAvatar?: string;
+}
+
 interface PostCardProps {
-  post: Post;
+  post: ExtendedPost;
 }
 
 const PostCard: FC<PostCardProps> = ({ post }) => {
@@ -62,15 +67,17 @@ const PostCard: FC<PostCardProps> = ({ post }) => {
           {truncatedContent}
         </p>
         
-        <div className="flex items-center justify-between mt-4">
-          <div className="flex items-center space-x-2">
+        <div className="flex items-center justify-between mt-4">          <div className="flex items-center space-x-2">
             <Avatar className="h-8 w-8">
-              <AvatarImage src="/default-avatar.png" alt="Author Avatar" />
-              <AvatarFallback>AU</AvatarFallback>
+              <AvatarImage src={typeof post.authorAvatar === 'string' ? post.authorAvatar : "/default-avatar.png"} alt="Author Avatar" />
+              <AvatarFallback>{typeof post.author === 'string' ? post.author.charAt(0).toUpperCase() : 'A'}</AvatarFallback>
             </Avatar>
-            <span className="text-sm text-gray-500 dark:text-gray-400">
-              {post.author || "Anonymous"}
-            </span>
+            <div>
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                {post.author || "Anonymous"}
+              </span>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Author</p>
+            </div>
           </div>
           
           <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">

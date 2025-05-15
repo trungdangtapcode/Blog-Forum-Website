@@ -2,11 +2,11 @@
 
 import { FC, useEffect, useState } from "react";
 import { Post, getPosts } from "@/utils/postFetching";
-import PostCard from "./PostCard";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Search, PlusCircle } from "lucide-react";
 import Link from "next/link";
+import CategoryTabContent from "./CategoryTabContent";
 
 interface PostGridProps {
   initialPosts?: Post[];
@@ -45,6 +45,7 @@ const PostGrid: FC<PostGridProps> = ({ initialPosts = [] }) => {
 
     fetchPosts();
   }, [initialPosts]);
+  
   // Filter posts based on search query and category
   const filteredPosts = posts.filter((post) => {
     const matchesSearch = 
@@ -63,7 +64,8 @@ const PostGrid: FC<PostGridProps> = ({ initialPosts = [] }) => {
   return (
     <div className="container mx-auto py-8 px-4 sm:px-6">
       <div className="mb-8">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">          <div className="flex items-center gap-2">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">          
+          <div className="flex items-center gap-2">
             <h2 className="text-3xl font-bold text-primary-800 dark:text-primary-100">
               Explore Posts
             </h2>
@@ -98,48 +100,15 @@ const PostGrid: FC<PostGridProps> = ({ initialPosts = [] }) => {
             ))}
           </TabsList>
           
+          {/* Use the CategoryTabContent for "all" tab */}
           <TabsContent value="all" className="mt-0">
-            {loading ? (
-              <div className="flex justify-center items-center h-60">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-secondary-600"></div>
-              </div>
-            ) : filteredPosts.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredPosts.map((post) => (
-                  <PostCard key={post._id} post={post} />
-                ))}
-              </div>
-            ) : (
-              <div className="flex flex-col items-center justify-center h-60">
-                <p className="text-xl text-gray-500 dark:text-gray-400">No posts found</p>
-                <p className="text-gray-400 dark:text-gray-500 mt-2">
-                  Try adjusting your search or filters
-                </p>
-              </div>
-            )}
+            <CategoryTabContent loading={loading} filteredPosts={filteredPosts} />
           </TabsContent>
           
-          {/* For other categories, we'll reuse the same content for now */}
+          {/* For other categories */}
           {categories.slice(1).map((category) => (
             <TabsContent key={category.id} value={category.id} className="mt-0">
-              {loading ? (
-                <div className="flex justify-center items-center h-60">
-                  <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-secondary-600"></div>
-                </div>
-              ) : filteredPosts.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {filteredPosts.map((post) => (
-                    <PostCard key={post._id} post={post} />
-                  ))}
-                </div>
-              ) : (
-                <div className="flex flex-col items-center justify-center h-60">
-                  <p className="text-xl text-gray-500 dark:text-gray-400">No posts found</p>
-                  <p className="text-gray-400 dark:text-gray-500 mt-2">
-                    Try adjusting your search or filters
-                  </p>
-                </div>
-              )}
+              <CategoryTabContent loading={loading} filteredPosts={filteredPosts} />
             </TabsContent>
           ))}
         </Tabs>

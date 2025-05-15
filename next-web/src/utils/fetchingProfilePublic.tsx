@@ -13,6 +13,8 @@ const tmp = {
 }
 
 export async function getPublicProfile(userId: string) {
+	console.log('CLIENT???')
+	// console.log('Fetching public profile for userId:', userId);
 	try {
 		const response = await axios.post(
 			`${DISPATCH_URL}/account/getPublicProfile/`,
