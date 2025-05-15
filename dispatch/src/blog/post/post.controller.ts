@@ -20,8 +20,11 @@ export class PostController {
   @Post('create')
   @UseGuards(Auth0Guard)
   @UsePipes(new ValidationPipe())
-  create(@Body() createPostDto: CreatePostDto) {
-    return this.postService.create(createPostDto);
+  async create(@Req() req: Request & { user: any }, @Body() createPostDto: CreatePostDto) {
+    const email = req.user.email;
+    const profile: AccountProfile = await this.accountService.getProfile(email);
+    const userId = profile._id as string;
+    return this.postService.create({...createPostDto, author: userId});
   }
 
   @Get('get')

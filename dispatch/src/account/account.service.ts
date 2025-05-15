@@ -41,15 +41,24 @@ export class AccountService {
 		}
 	}
 
+    async getPublicProfile(userId: string): Promise<AccountProfile> {
+        const profile = await this.profileModel.findById(userId);
+        if (!profile) {
+            throw new UnauthorizedException('Profile not found');
+        }
+        // Optionally, you can exclude sensitive information here
+        return profile;
+    }
+
 	async validateAccessToken(accessToken: string): Promise<any> {
 		try {
 			const url = `https://${process.env.AUTH0_DOMAIN}/userinfo`
 			console.log(url, accessToken)
-		  	const response = await axios.get(url, {
+		    const response = await axios.get(url, {
 				headers: {
 				Authorization: `Bearer ${accessToken}`,
 				},
-		  });
+		    });
 	
 		  return response.data; // contains user info like sub, email, etc.
 		} catch (error) {

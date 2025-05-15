@@ -37,5 +37,11 @@ export class AccountController {
 		return profile;
 	}
 
-	
+	@Get("/getPublicProfile/")
+	async getPublicProfile(@Body() body: { userId: string }) {
+		console.log('Inside Account Controller');
+		const profile = await this.AccountService.getPublicProfile(body.userId);
+		return profile;
+	}
+
 }

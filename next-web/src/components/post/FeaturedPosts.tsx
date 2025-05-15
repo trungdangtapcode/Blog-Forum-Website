@@ -98,7 +98,11 @@ const FeaturedPosts: FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {posts.map((post, index) => {
             // Format the date to be more readable
-            const formattedDate = formatDistanceToNow(new Date(post.createdAt), { addSuffix: true });
+            // console.log(post.createdAt)
+            let formattedDate = "Unknown date";
+            if (post.createdAt) {
+              formattedDate = formatDistanceToNow(new Date(post.createdAt), { addSuffix: true });
+            }
 
             // Truncate content for preview
             const truncatedContent = post.summary || (post.content.length > 120 

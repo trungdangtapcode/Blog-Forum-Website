@@ -15,7 +15,11 @@ export class PostService {
   ) {}
 
   async create(createPostDto: CreatePostDto): Promise<Post> {
-    const newPost = new this.postModel(createPostDto);
+    const newPost = new this.postModel({
+      ...createPostDto,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
     return newPost.save();
   }
 

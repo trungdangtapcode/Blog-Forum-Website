@@ -15,7 +15,7 @@ interface PostCardProps {
 
 const PostCard: FC<PostCardProps> = ({ post }) => {
   // Format the date to be more readable
-  const formattedDate = formatDistanceToNow(new Date(post.createdAt), { addSuffix: true });
+  const formattedDate = post.createdAt ? formatDistanceToNow(new Date(post.createdAt), { addSuffix: true }) : "Unknown date";
 
   // Truncate content for preview
   const truncatedContent = post.summary || (post.content.length > 150 

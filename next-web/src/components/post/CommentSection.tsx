@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatDistanceToNowSimple } from "@/utils/distanceToNow";
-import { auth0 } from "@/lib/auth0";
+import { auth0Client } from "@/lib/auth0-client";
 import { Loader2 } from "lucide-react";
 
 interface Author {
@@ -37,7 +37,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ postId, initialComments
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const session = await auth0.getAccessToken();
+        const session = await auth0Client.getToken();
         setIsAuthenticated(!!session);
       } catch (error) {
         console.error("Error checking authentication:", error);

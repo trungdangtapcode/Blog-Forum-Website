@@ -24,12 +24,14 @@ export interface CreatePostInput {
 }
 
 export async function getPosts() {
+  // const DISPATCH_URL = process.env.NEXT_PUBLIC_DISPATCH_URL || 'https://example.com';
   try {
     const response = await axios.get(
       `${DISPATCH_URL}/post/get`
     );
     
     if (response.status >= 200 && response.status < 300) {
+      console.log('Response:', response);
       return response.data;
     }
     return [];
@@ -40,6 +42,7 @@ export async function getPosts() {
 }
 
 export async function getPostById(id: string) {
+  // console.log('id:',id)
   try {
     const response = await axios.get(
       `${DISPATCH_URL}/post/get/${id}`
@@ -63,7 +66,7 @@ export async function createPost(postData: CreatePostInput) {
 
   try {
     const response = await axios.post(
-      `${process.env.NEXT_PUBLIC_DISPATCH_URL}/post/create` || 'https://example.com',
+      `${DISPATCH_URL}/post/create`,
       postData,
       {
         headers: {
@@ -91,7 +94,7 @@ export async function likePost(postId: string, action: 'like' | 'dislike') {
 
   try {
     const response = await axios.put(
-      `${process.env.NEXT_PUBLIC_DISPATCH_URL}/post/like` || 'https://example.com',
+      `${DISPATCH_URL}/post/like`,
       { post: postId, action },
       {
         headers: {
@@ -119,7 +122,7 @@ export async function unlikePost(postId: string) {
 
   try {
     const response = await axios.delete(
-      `${process.env.NEXT_PUBLIC_DISPATCH_URL}/post/like` || 'https://example.com',
+      `${DISPATCH_URL}/post/like`,
       {
         headers: {
           'Content-Type': 'application/json',
@@ -147,7 +150,7 @@ export async function isPostLiked(postId: string) {
 
   try {
     const response = await axios.get(
-      `${process.env.NEXT_PUBLIC_DISPATCH_URL}/post/isliked` || 'https://example.com',
+      `${DISPATCH_URL}/post/isliked`,
       {
         headers: {
           'Content-Type': 'application/json',
