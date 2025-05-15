@@ -43,5 +43,10 @@ export class AccountController {
 		const profile = await this.AccountService.getPublicProfile(body.userId);
 		return profile;
 	}
-
+	@Post("/getPublicProfile/")
+	async getPublicProfilePOST(@Body() body: { userId: string }) {
+		console.log('Inside Account Controller');
+		const profile = await this.AccountService.getPublicProfile(body.userId);
+		return profile;
+	}
 }

@@ -7,3 +7,5 @@ interface AccountProfile {
 	location: string;
 	occupation: string;
 }
+
+type AccountPublicProfile = Partial<AccountProfile>;

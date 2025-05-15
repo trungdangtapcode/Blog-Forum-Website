@@ -1,5 +1,5 @@
 
-import { getProfile } from "@/utils/fetching";
+import { getProfile } from "@/utils/fetchingProfile";
 import ProfilePageClient from "./clientpage";
 
 

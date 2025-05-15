@@ -8,7 +8,6 @@ export interface Post {
   content: string;
   author: string;
   likes: number;
-  dislikes: number;
   comments: string[];
   category: string;
   summary?: string;
@@ -32,6 +31,11 @@ export async function getPosts() {
     
     if (response.status >= 200 && response.status < 300) {
       console.log('Response:', response);
+      const fetchedPosts: Post[] = response.data;
+      if (fetchedPosts){
+        // reverse the list
+        fetchedPosts.reverse();
+      }
       return response.data;
     }
     return [];
@@ -63,7 +67,9 @@ export async function createPost(postData: CreatePostInput) {
   if (!token) {
     throw new Error('Session not found');
   }
-
+  console.log('postData:', postData)
+  console.log('DISPATCH_URL:', DISPATCH_URL)
+  console.log('token:', token)
   try {
     const response = await axios.post(
       `${DISPATCH_URL}/post/create`,
@@ -149,14 +155,16 @@ export async function isPostLiked(postId: string) {
   }
 
   try {
-    const response = await axios.get(
+    // Using POST method instead of GET to ensure body data is sent correctly
+    // The controller will still handle it as a GET request on the server side
+    const response = await axios.post(
       `${DISPATCH_URL}/post/isliked`,
+      { post: postId },
       {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
-        },
-        data: { post: postId },
+        }
       }
     );
     

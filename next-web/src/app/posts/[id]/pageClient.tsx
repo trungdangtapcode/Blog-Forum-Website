@@ -14,6 +14,7 @@ import CommentSection from "@/components/post/CommentSection";
 import Link from "next/link";
 
 import type { FC } from "react";
+import { getPublicProfile } from "@/utils/fetchingProfilePublic";
 
 interface PostDetailClientProps {
   params: { id: string };
@@ -22,19 +23,29 @@ interface PostDetailClientProps {
 const PostDetailClient: FC<PostDetailClientProps> = ({ params }) => {
   const [post, setPost] = useState<Post | null>(null);
   const [loading, setLoading] = useState(true);
-  const [userReaction, setUserReaction] = useState<'like' | 'dislike' | null>(null);
-  
-  useEffect(() => {
+  const [author, setAuthor] = useState<
+   AccountPublicProfile | null>(null);
+  const [userReaction, setUserReaction] = useState<'like' | 'dislike' | null>(null);    useEffect(() => {
     const fetchPost = async () => {
       try {
         const { id } = await params;
         const fetchedPost = await getPostById(id);
         setPost(fetchedPost);
 
+        const publicProfile = await getPublicProfile(fetchedPost.author);
+        setAuthor(publicProfile);
+
         // Check if user has already liked/disliked the post
-        const likeStatus = await isPostLiked(params.id);
-        if (likeStatus && likeStatus.action) {
-          setUserReaction(likeStatus.action);
+        try {
+          const likeStatus = await isPostLiked(id);
+          
+          console.log('likeStatus:',likeStatus)
+          if (likeStatus && likeStatus.action) {
+            setUserReaction(likeStatus.action);
+          }
+        } catch (error) {
+          console.error("Error checking like status:", error);
+          // Don't show an error toast for this, as it's not critical
         }
       } catch (error) {
         console.error("Error fetching post:", error);
@@ -46,7 +57,6 @@ const PostDetailClient: FC<PostDetailClientProps> = ({ params }) => {
 
     fetchPost();
   }, [params]);
-
   const handleReaction = async (action: 'like' | 'dislike') => {
     if (!post) return;
     
@@ -57,45 +67,49 @@ const PostDetailClient: FC<PostDetailClientProps> = ({ params }) => {
         await unlikePost(post._id);
         setUserReaction(null);
         
-        // Update UI first for responsiveness
+        // Update UI first for responsiveness based on the backend logic
         setPost(prev => {
           if (!prev) return prev;
+          
+          // The backend decreases the likes count by 1 when removing a like
+          // and increases the likes count by 1 when removing a dislike
+          const delta = action === 'like' ? -1 : 1;
+          
           return {
             ...prev,
-            likes: action === 'like' ? prev.likes - 1 : prev.likes,
-            dislikes: action === 'dislike' ? prev.dislikes - 1 : prev.dislikes
+            likes: Math.max(0, prev.likes + delta)
           };
         });
+        
+        toast.success(`Your ${action} has been removed`);
       } else {
         // Update UI first for responsiveness
         setPost(prev => {
           if (!prev) return prev;
           
-          let newLikes = prev.likes;
-          let newDislikes = prev.dislikes;
+          let delta = 0;
           
-          // If changing from one reaction to another, update both counts
-          if (userReaction === 'like' && action === 'dislike') {
-            newLikes = prev.likes - 1;
-            newDislikes = prev.dislikes + 1;
-          } else if (userReaction === 'dislike' && action === 'like') {
-            newLikes = prev.likes + 1;
-            newDislikes = prev.dislikes - 1;
-          } else if (action === 'like') {
-            newLikes = prev.likes + 1;
-          } else if (action === 'dislike') {
-            newDislikes = prev.dislikes + 1;
+          // If changing from one reaction to another
+          if (userReaction) {
+            // When going from dislike to like: +2 (remove dislike +1, add like +1)
+            // When going from like to dislike: -2 (remove like -1, add dislike -1)
+            delta = action === 'like' ? 2 : -2;
+          } else {
+            // Fresh reaction
+            // Like: +1, Dislike: -1
+            delta = action === 'like' ? 1 : -1;
           }
           
           return {
             ...prev,
-            likes: newLikes,
-            dislikes: newDislikes
+            likes: prev.likes + delta
           };
         });
         
         setUserReaction(action);
         await likePost(post._id, action);
+        
+        toast.success(`Post ${action === 'like' ? 'liked' : 'disliked'} successfully`);
       }
     } catch (error) {
       console.error("Error reacting to post:", error);
@@ -173,11 +187,11 @@ const PostDetailClient: FC<PostDetailClientProps> = ({ params }) => {
           
           <div className="flex items-center">
             <Avatar className="h-10 w-10">
-              <AvatarImage src="/default-avatar.png" alt="Author Avatar" />
+              <AvatarImage src={author?.avatar || "/default-avatar.png"} alt="Author Avatar" />
               <AvatarFallback>AU</AvatarFallback>
             </Avatar>
             <div className="ml-3">
-              <p className="font-medium">{post.author || "Anonymous"}</p>
+              <p className="font-medium">{author?.fullName || "Anonymous"}</p>
               <p className="text-sm text-gray-500 dark:text-gray-400">Author</p>
             </div>
           </div>
@@ -190,11 +204,17 @@ const PostDetailClient: FC<PostDetailClientProps> = ({ params }) => {
           {post.content.split('\n').map((paragraph, index) => (
             <p key={index}>{paragraph}</p>
           ))}
-        </div>
-        
-        {/* Post Actions */}
+        </div>        {/* Post Actions */}
         <div className="border bg-white dark:bg-gray-800 rounded-lg p-4 flex items-center justify-between">
-          <div className="flex gap-4">
+          <div className="flex gap-4 items-center">
+            {/* Votes count first, on the left */}
+            <div className={`px-3 py-1 rounded-md font-medium ${
+              post.likes > 0 ? 'text-green-600 bg-green-50 dark:bg-green-900/30' : 
+              'text-gray-600 bg-gray-50 dark:bg-gray-700'
+            }`}>
+              {post.likes || 0} votes
+            </div>
+            
             <Button
               variant="ghost"
               size="sm"
@@ -202,7 +222,7 @@ const PostDetailClient: FC<PostDetailClientProps> = ({ params }) => {
               className={userReaction === 'like' ? 'text-green-600 bg-green-50 dark:bg-green-900/30' : ''}
             >
               <ThumbsUp className="h-5 w-5 mr-2" />
-              {post.likes} Upvotes
+              {userReaction === 'like' ? 'Liked' : 'Like'}
             </Button>
             
             <Button
@@ -212,7 +232,7 @@ const PostDetailClient: FC<PostDetailClientProps> = ({ params }) => {
               className={userReaction === 'dislike' ? 'text-red-600 bg-red-50 dark:bg-red-900/30' : ''}
             >
               <ThumbsDown className="h-5 w-5 mr-2" />
-              {post.dislikes} Downvotes
+              Dislike
             </Button>
           </div>
           

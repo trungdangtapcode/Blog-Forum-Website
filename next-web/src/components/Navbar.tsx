@@ -2,7 +2,7 @@
 
 import { auth0 } from '@/lib/auth0'
 import NavbarClient from './NavbarClient';
-import { getProfile } from '@/utils/fetching';
+import { getProfile } from '@/utils/fetchingProfile';
 
 
 const Navbar = async ()=>{

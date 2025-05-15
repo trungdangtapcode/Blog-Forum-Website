@@ -53,7 +53,7 @@ export class AccountService {
 	async validateAccessToken(accessToken: string): Promise<any> {
 		try {
 			const url = `https://${process.env.AUTH0_DOMAIN}/userinfo`
-			console.log(url, accessToken)
+			// console.log(url, accessToken)
 		    const response = await axios.get(url, {
 				headers: {
 				Authorization: `Bearer ${accessToken}`,

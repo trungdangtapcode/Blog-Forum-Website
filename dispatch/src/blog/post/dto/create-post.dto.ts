@@ -1,4 +1,11 @@
-import { IsString, IsNotEmpty, IsMongoId } from 'class-validator';
+import {
+  IsString,
+  IsNotEmpty,
+  IsMongoId,
+  IsOptional,
+  IsNumber,
+  IsArray,
+} from 'class-validator';
 
 export class CreatePostDto {
   @IsString()
@@ -10,6 +17,23 @@ export class CreatePostDto {
   content: string;
 
   @IsMongoId()
-  @IsNotEmpty()
-  author: string;
+  @IsOptional()
+  author?: string;
+
+  @IsString()
+  @IsOptional()
+  summary?: string;
+
+  @IsNumber()
+  @IsOptional()
+  likes?: number;
+
+  @IsArray()
+  @IsString({ each: true })
+  @IsOptional()
+  comments?: string[];
+
+  @IsString()
+  @IsOptional()
+  category?: string;
 }

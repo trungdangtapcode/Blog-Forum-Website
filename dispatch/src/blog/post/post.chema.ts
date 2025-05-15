@@ -14,6 +14,9 @@ export class Post extends Document {
   @Prop({ ref: 'AccountProfile' })
   author: string;
 
+  @Prop({ default: '' })
+  summary: string;
+
   @Prop({ default: 0 })
   likes: number;
 

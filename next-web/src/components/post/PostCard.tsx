@@ -5,7 +5,7 @@ import { FC } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ThumbsUp, ThumbsDown, MessageCircle, Clock, Tag } from "lucide-react";
+import { ThumbsUp, MessageCircle, Clock, Tag } from "lucide-react";
 import { formatDistanceToNow } from 'date-fns/formatDistanceToNow'
 import { Badge } from "@/components/ui/badge";
 
@@ -84,10 +84,6 @@ const PostCard: FC<PostCardProps> = ({ post }) => {
             <div className="flex items-center space-x-1">
               <ThumbsUp className="h-4 w-4 text-secondary-600" />
               <span className="text-xs">{post.likes}</span>
-            </div>
-            <div className="flex items-center space-x-1">
-              <ThumbsDown className="h-4 w-4 text-red-500" />
-              <span className="text-xs">{post.dislikes}</span>
             </div>
             <div className="flex items-center space-x-1">
               <MessageCircle className="h-4 w-4 text-primary-600" />
