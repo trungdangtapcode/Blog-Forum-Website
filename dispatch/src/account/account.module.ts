@@ -22,7 +22,7 @@ import { Auth0Guard } from './guards/auth0.guard';
 		JwtModule.register({})
     ],
     providers:[
-        AccountService,  Auth0Strategy, Auth0Guard
+        AccountService, Auth0Strategy, Auth0Guard
     ]
     ,
     controllers: [AccountController],
