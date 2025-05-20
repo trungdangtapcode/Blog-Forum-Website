@@ -31,5 +31,7 @@ import { JwtStrategy } from './strategies/jwt.strategy';
     controllers: [AuthController],
     exports: [AuthService]
 })
-
-export class AuthModule {};
+class AuthModule {}
+// THIS MODULE IS NO MORE IN USE
+// MOVE TO ACCOUNT MODULE INSTEAD
+// export class AuthModule {};

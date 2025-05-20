@@ -5,12 +5,14 @@ import { PostService } from './post.service';
 import { Post, PostSchema } from './post.chema';
 import { AccountModule } from '@/account/account.module';
 import { Like, LikeSchema } from './like.schema';
+import { CommentModule } from './comment/comment.module';
 // import { Auth0Guard } from 'src/account/guards/auth0.guard';
 // import { APP_GUARD } from '@nestjs/core';
 
 @Module({
   imports: [
-	AccountModule,
+    AccountModule,
+    CommentModule,
     MongooseModule.forFeature([{ name: Post.name, schema: PostSchema }]),
     MongooseModule.forFeature([{ name: Like.name, schema: LikeSchema }]),
   ],
