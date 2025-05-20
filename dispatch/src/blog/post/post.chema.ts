@@ -25,11 +25,10 @@ export class Post extends Document {
 
   @Prop({ default: 'general' })
   category: string;
-
-  @Prop({ type: Date, select: false })
+  @Prop({ type: Date })
   createdAt: Date;
 
-  @Prop({ type: Date, select: false })
+  @Prop({ type: Date })
   updatedAt: Date;
 }
 

@@ -15,85 +15,147 @@ export class CommentService {
     @InjectModel(CommentVote.name) private readonly commentVoteModel: Model<CommentVote>,
     @InjectModel(Post.name) private readonly postModel: Model<Post>,
   ) {}
-
   async create(userId: string, createCommentDto: CreateCommentDto): Promise<Comment> {
-    // Check if post exists
+    console.log(`Creating comment for post: ${createCommentDto.post}, parent: ${createCommentDto.parentComment || 'none'}`);
+    
     const post = await this.postModel.findById(createCommentDto.post);
     if (!post) {
       throw new NotFoundException('Post not found');
     }
 
-    // Create the comment
     const newComment = new this.commentModel({
       content: createCommentDto.content,
       author: userId,
       post: createCommentDto.post,
+      replies: [] // Initialize replies as an empty array
     });
 
-    // Handle replies to existing comments
     if (createCommentDto.parentComment) {
+      // This is a reply to an existing comment
       const parentComment = await this.commentModel.findById(createCommentDto.parentComment);
       if (!parentComment) {
         throw new NotFoundException('Parent comment not found');
       }
-      
+
       newComment.parentComment = new Types.ObjectId(createCommentDto.parentComment);
-      
-      // Save the comment
       const savedComment = await newComment.save();
-      
-      // Update parent comment to include this reply
+
+      // Update parent comment's replies array
       await this.commentModel.findByIdAndUpdate(
         createCommentDto.parentComment,
         { $push: { replies: savedComment._id } }
       );
+
+      // Return the saved comment with author information
+      const populatedComment = await this.commentModel.findById(savedComment._id)
+        .populate('author', 'fullName avatar')
+        .lean();
       
-      return savedComment;
+      console.log(`Created reply comment: ${populatedComment._id} for parent: ${createCommentDto.parentComment}`);
+      return populatedComment;
     } else {
-      // Save the comment
+      // This is a top-level comment
       const savedComment = await newComment.save();
-      
-      // Update post to include comment reference
+
+      // Update post's comments array
       await this.postModel.findByIdAndUpdate(
         createCommentDto.post,
         { $push: { comments: savedComment._id } }
       );
+
+      // Return the saved comment with author information
+      const populatedComment = await this.commentModel.findById(savedComment._id)
+        .populate('author', 'fullName avatar')
+        .lean();
       
-      return savedComment;
+      console.log(`Created top-level comment: ${populatedComment._id} for post: ${createCommentDto.post}`);
+      return populatedComment;
     }
   }
 
-  async findAll(): Promise<Comment[]> {
-    return this.commentModel.find()
-      .populate('author', 'fullName avatar')
-      .sort({ createdAt: -1 })
-      .exec();
-  }
 
-  async findOne(id: string): Promise<Comment> {
-    const comment = await this.commentModel.findById(id)
-      .populate('author', 'fullName avatar')
-      .exec();
-    
-    if (!comment) {
-      throw new NotFoundException('Comment not found');
+    async findAll(): Promise<Comment[]> {
+      return this.commentModel.find()
+        .populate('author', 'fullName avatar')
+        .sort({ createdAt: -1 })
+        .exec();
     }
-    
-    return comment;
-  }
 
-  async findByPost(postId: string): Promise<Comment[]> {
-    return this.commentModel.find({ post: postId, parentComment: null })
-      .populate('author', 'fullName avatar')
-      .populate({
-        path: 'replies',
-        populate: {
+    async findOne(id: string): Promise<Comment> {
+      const comment = await this.commentModel.findById(id)
+        .populate('author', 'fullName avatar')
+        .exec();
+      
+      if (!comment) {
+        throw new NotFoundException('Comment not found');
+      }
+      
+      return comment;
+    }  async findByPost(postId: string): Promise<Comment[]> {
+    console.log(`Finding comments for post: ${postId}`);
+    
+    // Define a recursive population function for nested replies
+    // This ensures we populate all levels of nested replies
+    const populateReplies = {
+      path: 'replies',
+      populate: [
+        {
           path: 'author',
           select: 'fullName avatar'
+        },
+        // Recursive population of nested replies
+        {
+          path: 'replies',
+          populate: [
+            {
+              path: 'author',
+              select: 'fullName avatar'
+            },
+            // For deeper nesting, we define another level
+            {
+              path: 'replies',
+              populate: [
+                {
+                  path: 'author',
+                  select: 'fullName avatar'
+                },
+                // One more level for very deep conversations
+                {
+                  path: 'replies',
+                  populate: [
+                    {
+                      path: 'author',
+                      select: 'fullName avatar'
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
-      })
+      ]
+    };
+
+    // First get all top-level comments for this post
+    const comments = await this.commentModel.find({ post: postId, parentComment: null })
+      .populate('author', 'fullName avatar')
+      .populate(populateReplies)
       .sort({ createdAt: -1 })
       .exec();
+    
+    console.log(`Found ${comments.length} top-level comments for post ${postId}`);
+    
+    // Log a sample of the structure to verify replies are populated correctly
+    if (comments.length > 0) {
+      const firstComment = comments[0];
+      console.log(`First comment has ${firstComment.replies?.length || 0} direct replies`);
+      
+      if (firstComment.replies && firstComment.replies.length > 0) {
+        console.log('First reply ID:', firstComment.replies[0]._id);
+      }
+    }
+    
+    return comments;
   }
 
   async update(userId: string, id: string, updateCommentDto: UpdateCommentDto): Promise<Comment> {

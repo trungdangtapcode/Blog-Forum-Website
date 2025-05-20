@@ -36,7 +36,26 @@ export async function getCommentsByPostId(postId: string) {
     );
     
     if (response.status >= 200 && response.status < 300) {
-      return response.data;
+      console.log("Fetched comments:", response.data); // Debug log to verify data structure
+      
+      // Validate that we have a proper array of comments
+      if (Array.isArray(response.data)) {
+        // Check for nested replies structure
+        const hasNestedReplies = response.data.some(comment => 
+          comment.replies && Array.isArray(comment.replies) && comment.replies.length > 0
+        );
+        
+        if (hasNestedReplies) {
+          console.log("Comment data includes nested replies structure");
+        } else {
+          console.log("Comment data is flat (no nested replies)");
+        }
+        
+        return response.data;
+      } else {
+        console.error("API returned non-array comments:", response.data);
+        return [];
+      }
     }
     return [];
   } catch (error) {
@@ -62,6 +81,8 @@ export async function createComment(commentData: CreateCommentInput) {
     );
     
     if (response.status >= 200 && response.status < 300) {
+      // console.log('Comment created successfully:', JSON.stringify(response.data));
+      // console.log('Comment created successfully:', response.data);
       return response.data;
     }
     throw new Error('Failed to create comment');

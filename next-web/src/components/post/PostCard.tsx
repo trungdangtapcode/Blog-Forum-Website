@@ -6,12 +6,13 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ThumbsUp, MessageCircle, Clock, Tag } from "lucide-react";
-import { formatDistanceToNow } from 'date-fns/formatDistanceToNow'
 import { Badge } from "@/components/ui/badge";
+import { formatRelativeDate } from "@/utils/dateFormatting";
 
 // Extend the Post type to include authorAvatar
 interface ExtendedPost extends Post {
   authorAvatar?: string;
+  authorName?: string;
 }
 
 interface PostCardProps {
@@ -20,7 +21,7 @@ interface PostCardProps {
 
 const PostCard: FC<PostCardProps> = ({ post }) => {
   // Format the date to be more readable
-  const formattedDate = post.createdAt ? formatDistanceToNow(new Date(post.createdAt), { addSuffix: true }) : "Unknown date";
+  const formattedDate = formatRelativeDate(post.createdAt);
 
   // Truncate content for preview
   const truncatedContent = post.summary || (post.content.length > 150 
@@ -67,14 +68,27 @@ const PostCard: FC<PostCardProps> = ({ post }) => {
           {truncatedContent}
         </p>
         
-        <div className="flex items-center justify-between mt-4">          <div className="flex items-center space-x-2">
+        <div className="flex items-center justify-between mt-4">          
+          <div className="flex items-center space-x-2">            
             <Avatar className="h-8 w-8">
-              <AvatarImage src={typeof post.authorAvatar === 'string' ? post.authorAvatar : "/default-avatar.png"} alt="Author Avatar" />
-              <AvatarFallback>{typeof post.author === 'string' ? post.author.charAt(0).toUpperCase() : 'A'}</AvatarFallback>
+              <AvatarImage src={
+                typeof post.author === 'object' && post.author.avatar 
+                  ? post.author.avatar 
+                  : post.authorAvatar || "/default-avatar.png"
+              } alt="Author Avatar" />
+              <AvatarFallback>
+                {typeof post.author === "object" && post.author.name 
+                  ? post.author.name.charAt(0).toUpperCase() 
+                  : typeof post.author === "string" 
+                    ? post.author.charAt(0).toUpperCase() 
+                    : 'A'}
+              </AvatarFallback>
             </Avatar>
             <div>
               <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                {post.author || "Anonymous"}
+                {typeof post.author === "object" && post.author.name 
+                  ? post.author.name 
+                  : post.authorName || "Anonymous"}
               </span>
               <p className="text-xs text-gray-500 dark:text-gray-400">Author</p>
             </div>

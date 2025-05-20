@@ -145,8 +145,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ postId }) => {
     };
 
     fetchComments();
-  }, [postId, isAuthenticated]);
-  // Post a new comment
+  }, [postId, isAuthenticated]);  // Post a new comment
   const handleSubmitComment = async () => {
     if (!newComment.trim() || !isAuthenticated) return;
     
@@ -158,6 +157,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ postId }) => {
       };
       
       const createdComment = await createComment(commentData);
+      console.log('createdComment:', createdComment);
       
       // Ensure the comment has proper author information
       // The API response might not include complete author info, so we ensure it has it

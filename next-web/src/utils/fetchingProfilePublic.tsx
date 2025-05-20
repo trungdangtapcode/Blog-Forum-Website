@@ -13,8 +13,9 @@ const tmp = {
 }
 
 export async function getPublicProfile(userId: string) {
-	console.log('CLIENT: Fetching public profile');
-	console.log('Fetching public profile for userId:', userId);
+	// debug
+	// console.log('CLIENT: Fetching public profile');
+	// console.log('Fetching public profile for userId:', userId);
 	if (!userId) {
 		return tmp;
 	}

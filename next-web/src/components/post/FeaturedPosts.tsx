@@ -7,7 +7,7 @@ import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { ThumbsUp, MessageCircle, Clock, Tag } from "lucide-react";
-import { formatDistanceToNow } from 'date-fns/formatDistanceToNow'
+import { formatRelativeDate } from "@/utils/dateFormatting";
 import { motion } from "framer-motion";
 
 const FeaturedPosts: FC = () => {
@@ -95,14 +95,9 @@ const FeaturedPosts: FC = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {posts.map((post, index) => {
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">          {posts.map((post, index) => {
             // Format the date to be more readable
-            // console.log(post.createdAt)
-            let formattedDate = "Unknown date";
-            if (post.createdAt) {
-              formattedDate = formatDistanceToNow(new Date(post.createdAt), { addSuffix: true });
-            }
+            const formattedDate = formatRelativeDate(post.createdAt);
 
             // Truncate content for preview
             const truncatedContent = post.summary || (post.content.length > 120 
@@ -134,13 +129,29 @@ const FeaturedPosts: FC = () => {
                         {truncatedContent}
                       </p>
                       
-                      <div className="flex items-center mt-auto pt-4">
-                        <Avatar className="h-8 w-8 mr-2">
-                          <AvatarImage src="/default-avatar.png" alt="Author Avatar" />
-                          <AvatarFallback>{post.author?.substring(0, 2).toUpperCase() || "AU"}</AvatarFallback>
+                      <div className="flex items-center mt-auto pt-4">                        <Avatar className="h-8 w-8 mr-2">
+                          <AvatarImage 
+                            src={typeof post.author === 'object' && post.author.avatar
+                              ? post.author.avatar
+                              : "/default-avatar.png"} 
+                            alt="Author Avatar" 
+                          />
+                          <AvatarFallback>
+                            {typeof post.author === 'object' && post.author.name
+                              ? post.author.name.substring(0, 2).toUpperCase()
+                              : typeof post.author === 'string'
+                                ? post.author.substring(0, 2).toUpperCase()
+                                : "AU"}
+                          </AvatarFallback>
                         </Avatar>
                         <div>
-                          <p className="text-sm font-medium">{post.author || "Anonymous"}</p>
+                          <p className="text-sm font-medium">
+                            {typeof post.author === 'object' && post.author.name
+                              ? post.author.name
+                              : typeof post.author === 'string'
+                                ? post.author
+                                : "Anonymous"}
+                          </p>
                           <div className="flex items-center text-xs text-gray-500">
                             <Clock className="h-3 w-3 mr-1" />
                             <span>{formattedDate}</span>

@@ -51,37 +51,57 @@ const FixedCommentSection: React.FC<CommentSectionProps> = ({ postId }) => {
   const [userVotes, setUserVotes] = useState<Record<string, string>>({});
   const [submittingVote, setSubmittingVote] = useState<string | null>(null);
   const [currentUser, setCurrentUser] = useState<{id: string, name: string, avatar: string} | null>(null);
-  
-  // Organize comments into threads (top-level and replies)
+    // Organize comments into threads (top-level and replies)
   const organizeComments = (comments: CommentType[]): CommentType[] => {
-    const commentMap = new Map<string, CommentType>();
-    const topLevelComments: CommentType[] = [];
-
-    // First pass: index all comments by ID
-    comments.forEach(comment => {
-      commentMap.set(comment._id, {...comment, replies: []});
-    });
-
-    // Second pass: organize into parent-child relationships
-    comments.forEach(comment => {
-      const processedComment = commentMap.get(comment._id)!;
+    // When the backend already provides a properly nested structure with populated replies,
+    // we just need to filter out the top-level comments and ensure proper sorting
+    
+    if (!Array.isArray(comments)) {
+      console.error("Expected comments to be an array, received:", comments);
+      return [];
+    }
+    
+    // Filter for top-level comments only (those without a parentComment)
+    const topLevelComments = comments.filter(comment => !comment.parentComment);
+    
+    // In case we receive a flat structure where parentComment references exist but replies aren't populated,
+    // fall back to the manual organization
+    if (topLevelComments.length === 0 && comments.length > 0) {
+      console.log("No top-level comments found, falling back to manual organization");
       
-      if (comment.parentComment) {
-        // This is a reply, add to parent's replies
-        const parent = commentMap.get(comment.parentComment);
-        if (parent) {
-          parent.replies = parent.replies || [];
-          parent.replies.push(processedComment);
-        } else {
-          // Parent not found, treat as top-level
-          topLevelComments.push(processedComment);
-        }
-      } else {
-        // This is a top-level comment
-        topLevelComments.push(processedComment);
-      }
-    });
+      const commentMap = new Map<string, CommentType>();
+      const manualTopLevelComments: CommentType[] = [];
 
+      // First pass: index all comments by ID
+      comments.forEach(comment => {
+        commentMap.set(comment._id, {...comment, replies: []});
+      });
+
+      // Second pass: organize into parent-child relationships
+      comments.forEach(comment => {
+        const processedComment = commentMap.get(comment._id)!;
+        
+        if (comment.parentComment) {
+          // This is a reply, add to parent's replies
+          const parent = commentMap.get(comment.parentComment);
+          if (parent) {
+            parent.replies = parent.replies || [];
+            parent.replies.push(processedComment);
+          } else {
+            // Parent not found, treat as top-level
+            manualTopLevelComments.push(processedComment);
+          }
+        } else {
+          // This is a top-level comment
+          manualTopLevelComments.push(processedComment);
+        }
+      });
+      
+      return manualTopLevelComments.sort((a, b) => 
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      );
+    }
+    
     // Sort top-level comments by date (newest first)
     return topLevelComments.sort((a, b) => 
       new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
@@ -113,32 +133,57 @@ const FixedCommentSection: React.FC<CommentSectionProps> = ({ postId }) => {
     
     checkAuth();
   }, []);
-
   // Fetch comments
   useEffect(() => {
     const fetchComments = async () => {
       setLoading(true);
       try {
         const fetchedComments = await getCommentsByPostId(postId);
-        setComments(organizeComments(fetchedComments));
+        console.log("Raw fetched comments:", fetchedComments); // Debug log
+        
+        if (!Array.isArray(fetchedComments)) {
+          console.error("Expected comments array, got:", typeof fetchedComments);
+          setComments([]);
+          setLoading(false);
+          return;
+        }
+        
+        // Check if the backend already provided nested comments
+        const hasNestedStructure = fetchedComments.some(comment => 
+          comment.replies && Array.isArray(comment.replies) && comment.replies.length > 0
+        );
+        
+        console.log("Comments have nested structure:", hasNestedStructure);
+        
+        const organizedComments = organizeComments(fetchedComments);
+        console.log("Organized comments:", organizedComments); // Debug log
+        
+        setComments(organizedComments);
         
         // If user is authenticated, fetch their votes for each comment
         if (isAuthenticated) {
           const votes: Record<string, string> = {};
           
-          // Fetch votes for comments one at a time, but don't let errors stop the whole process
-          for (const comment of fetchedComments) {
-            try {
-              const voteData = await getUserCommentVote(comment._id);
-              if (voteData && voteData.action) {
-                votes[comment._id] = voteData.action;
+          // Helper function to process all comments including nested replies
+          const processCommentsForVotes = async (commentList: CommentType[]) => {
+            for (const comment of commentList) {
+              try {
+                const voteData = await getUserCommentVote(comment._id);
+                if (voteData && voteData.action) {
+                  votes[comment._id] = voteData.action;
+                }
+                
+                // Process nested replies recursively
+                if (comment.replies && Array.isArray(comment.replies) && comment.replies.length > 0) {
+                  await processCommentsForVotes(comment.replies);
+                }
+              } catch {
+                console.log(`Couldn't get vote for comment ${comment._id}`);
               }
-            } catch {
-              // Silently handle vote fetch errors - they shouldn't break comment loading
-              console.log(`Couldn't get vote for comment ${comment._id}`);
             }
-          }
+          };
           
+          await processCommentsForVotes(fetchedComments);
           setUserVotes(votes);
         }
       } catch (error) {
@@ -164,6 +209,7 @@ const FixedCommentSection: React.FC<CommentSectionProps> = ({ postId }) => {
       };
       
       const createdComment = await createComment(commentData);
+      console.log("Created comment:", createdComment);
       
       // Ensure the comment has proper author information
       // The API response might not include complete author info, so we ensure it has it
@@ -627,7 +673,8 @@ const FixedCommentSection: React.FC<CommentSectionProps> = ({ postId }) => {
           <div className="text-center py-6">
             <p className="text-gray-500 dark:text-gray-400">No comments yet. Be the first to comment!</p>
           </div>
-        )}      </div>
+        )}      
+      </div>
     </div>
   );
 };

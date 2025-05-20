@@ -27,6 +27,7 @@ const PostGrid: FC<PostGridProps> = ({ initialPosts = [] }) => {
   const [loading, setLoading] = useState<boolean>(!initialPosts.length);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [activeCategory, setActiveCategory] = useState<string>("all");
+  const initialPostCount = 12;
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -101,13 +102,13 @@ const PostGrid: FC<PostGridProps> = ({ initialPosts = [] }) => {
           </TabsList>          
           {/* Use the CategoryTabContent for "all" tab */}
           <TabsContent value="all" className="mt-0">
-            <CategoryTabContent loading={loading} filteredPosts={filteredPosts} initialPostCount={6} />
+            <CategoryTabContent loading={loading} filteredPosts={filteredPosts} initialPostCount={initialPostCount} />
           </TabsContent>
           
           {/* For other categories */}
           {categories.slice(1).map((category) => (
             <TabsContent key={category.id} value={category.id} className="mt-0">
-              <CategoryTabContent loading={loading} filteredPosts={filteredPosts} initialPostCount={6} />
+              <CategoryTabContent loading={loading} filteredPosts={filteredPosts} initialPostCount={initialPostCount} />
             </TabsContent>
           ))}
         </Tabs>

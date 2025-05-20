@@ -28,23 +28,33 @@ const CategoryTabContent: FC<CategoryTabContentProps> = ({
   // Reset visible posts when filtered posts change
   useEffect(() => {
     setVisiblePosts(initialPostCount);
-  }, [filteredPosts, initialPostCount]);    // Fetch author information for visible posts only
+  }, [filteredPosts, initialPostCount]);
+  
+  // Fetch author information for visible posts only
   useEffect(() => {
     // Skip fetching if there are no posts to display
     if (filteredPosts.length === 0) return;
     
-    // No need to recalculate posts to display here
+    // Extract authorIds, handling both string and Author object types
     const authorIds = [...new Set(filteredPosts
       .slice(0, visiblePosts)
-      .map(post => post.author)
+      .map(post => {
+        // If author is an object, use its _id property, otherwise use the string as is
+        if (typeof post.author === 'object' && post.author !== null) {
+          return post.author._id;
+        }
+        return post.author;
+      })
       .filter(id => id) // Filter out any null or undefined values
     )];
     
     // Skip if we don't have any new authors to fetch
-    if (authorIds.every(id => authorsRef.current[id] !== undefined)) {
+    if (authorIds.every(id => typeof id === 'string' && authorsRef.current[id] !== undefined)) {
       // If all authors are already in our ref, just make sure our state is in sync
       const currentAuthors = authorIds.reduce((acc, id) => {
-        acc[id] = authorsRef.current[id];
+        if (typeof id === 'string') {
+          acc[id] = authorsRef.current[id];
+        }
         return acc;
       }, {} as Record<string, AccountPublicProfile | null>);
       
@@ -52,138 +62,150 @@ const CategoryTabContent: FC<CategoryTabContentProps> = ({
       return;
     }
     
-    // Otherwise, fetch the missing authors
+    // Fetch author profiles that we don't already have
     const fetchAuthors = async () => {
       const newAuthorsData: Record<string, AccountPublicProfile | null> = {};
-      let hasNewData = false;
       
       for (const authorId of authorIds) {
-        // Only fetch if we don't already have this author's data
+        if (typeof authorId !== 'string') continue;
+        
         if (authorsRef.current[authorId] === undefined) {
           try {
             const profile = await getPublicProfile(authorId);
             newAuthorsData[authorId] = profile;
-            // Update our ref
             authorsRef.current[authorId] = profile;
-            hasNewData = true;
-          } catch (error) {
-            console.error(`Error fetching author ${authorId}:`, error);
+          } catch (err) {
+            console.error(`Error fetching profile for ${authorId}:`, err);
             newAuthorsData[authorId] = null;
             authorsRef.current[authorId] = null;
-            hasNewData = true;
           }
         } else {
-          // Use existing author data from the ref
           newAuthorsData[authorId] = authorsRef.current[authorId];
         }
       }
       
-      // Only update state if we have new data
-      if (hasNewData) {
-        setAuthors(prev => ({ ...prev, ...newAuthorsData }));
-      }
+      setAuthors(prev => ({...prev, ...newAuthorsData}));
     };
-
-    fetchAuthors();
-  }, [filteredPosts, visiblePosts]);// Depend on the source values rather than the derived value
-  // Load more posts and their authors
-  const handleLoadMore = async () => {
-    // Prevent multiple simultaneous "load more" operations
-    if (loadingMore) return;
     
+    fetchAuthors();
+  }, [filteredPosts, visiblePosts]);
+
+  // Function to load more posts
+  const loadMorePosts = async () => {
     setLoadingMore(true);
     
     try {
-      // Increase the number of visible posts
-      const newVisibleCount = Math.min(visiblePosts + initialPostCount, filteredPosts.length);
+      // Add more posts to the visible count
+      const newVisibleCount = visiblePosts + initialPostCount;
+      setVisiblePosts(newVisibleCount);
       
-      // Get the newly visible posts
+      // Fetch new author profiles for the newly visible posts
       const newPosts = filteredPosts.slice(visiblePosts, newVisibleCount);
+      const newAuthorIds = [...new Set(newPosts.map(post => {
+        if (typeof post.author === 'object' && post.author !== null) {
+          return post.author._id;
+        }
+        return post.author;
+      }).filter(id => typeof id === 'string'))] as string[];
       
-      // Fetch authors for the new posts
-      const newAuthorIds = [...new Set(newPosts.map(post => post.author))];
       const newAuthorsToFetch = newAuthorIds.filter(id => id && authorsRef.current[id] === undefined);
       
-      // Only fetch authors if we have new ones to fetch
       if (newAuthorsToFetch.length > 0) {
         const newAuthorsData: Record<string, AccountPublicProfile | null> = {};
         
         for (const authorId of newAuthorsToFetch) {
+          continue
+          // skip because we already have the author, fetch from first
+          // if the scale of posts is larger (in future), then I will use this code below
           try {
             const profile = await getPublicProfile(authorId);
             newAuthorsData[authorId] = profile;
-            // Also update the ref
             authorsRef.current[authorId] = profile;
-          } catch (error) {
-            console.error(`Error fetching author ${authorId}:`, error);
+          } catch (err) {
+            console.error(`Error fetching profile for ${authorId}:`, err);
             newAuthorsData[authorId] = null;
             authorsRef.current[authorId] = null;
           }
         }
         
-        // Update the authors state with new data
-        if (Object.keys(newAuthorsData).length > 0) {
-          setAuthors(prev => ({ ...prev, ...newAuthorsData }));
-        }
+        setAuthors(prev => ({...prev, ...newAuthorsData}));
       }
-      
-      // Update the visible posts count
-      setVisiblePosts(newVisibleCount);
     } catch (error) {
       console.error("Error loading more posts:", error);
     } finally {
       setLoadingMore(false);
     }
   };
-
+  
+  // Show loading state when no posts yet
+  if (loading && filteredPosts.length === 0) {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {[...Array(6)].map((_, index) => (
+          <div key={index} className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm">
+            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-4"></div>
+            <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-full mb-2"></div>
+            <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-full mb-2"></div>
+            <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-4"></div>
+            <div className="flex justify-between items-center mt-6">
+              <div className="flex items-center">
+                <div className="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded-full mr-2"></div>
+                <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-16"></div>
+              </div>
+              <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-16"></div>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+  
   return (
     <>
-      {loading ? (
-        <div className="flex justify-center items-center h-60">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-secondary-600"></div>
-        </div>
-      ) : filteredPosts.length > 0 ? (
-        <>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {postsToDisplay.map((post) => (
-              <PostCard key={post._id} post={{
-                ...post,
-                // If we have author information, update the post author property with the full name
-                author: authors[post.author]?.fullName || post.author,
-                // Also pass the author avatar
-                authorAvatar: authors[post.author]?.avatar || "/default-avatar.png"
-              }} />
-            ))}
-          </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">        
+        {postsToDisplay.map((post) => {
+          // Create a modified post object for the PostCard component
+          let authorAvatar: string = "/default-avatar.png";
+          let authorName: string = "Anonymous";
           
-          {/* Load More Button */}
-          {hasMorePosts && (
-            <div className="mt-8 text-center">
-              <Button 
-                variant="outline" 
-                size="lg" 
-                onClick={handleLoadMore}
-                disabled={loadingMore}
-                className="min-w-[150px]"
-              >
-                {loadingMore ? (
-                  <>
-                    <span className="mr-2">Loading</span>
-                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                  </>
-                ) : (
-                  `View More (${filteredPosts.length - visiblePosts} remaining)`
-                )}
-              </Button>
-            </div>
-          )}
-        </>
-      ) : (
-        <div className="flex flex-col items-center justify-center h-60">
-          <p className="text-xl text-gray-500 dark:text-gray-400">No posts found</p>
-          <p className="text-gray-400 dark:text-gray-500 mt-2">
-            Try adjusting your search or filters
-          </p>
+          // If author is an object, use its properties directly
+          if (typeof post.author === 'object' && post.author !== null) {
+            authorAvatar = post.author.avatar || "/default-avatar.png";
+            authorName = post.author.fullName || "Anonymous";
+          } 
+          // If author is a string (ID), use the fetched author data
+          else if (typeof post.author === 'string' && authors[post.author]) {
+            authorAvatar = authors[post.author]?.avatar || "/default-avatar.png";
+            
+            authorName = authors[post.author]?.fullName || "Anonymous";
+          }
+          
+          
+          return (
+            <PostCard 
+              key={post._id} 
+              post={{
+                ...post,
+                authorAvatar,
+                authorName
+              }} 
+            />
+          );
+        })}
+      </div>
+      
+      {/* Load More Button */}
+      {hasMorePosts && (
+        <div className="mt-8 text-center">
+          <Button 
+            variant="outline" 
+            size="lg" 
+            onClick={loadMorePosts} 
+            disabled={loadingMore}
+            className="min-w-[160px]"
+          >
+            {loadingMore ? 'Loading...' : 'Load More Posts'}
+          </Button>
         </div>
       )}
     </>

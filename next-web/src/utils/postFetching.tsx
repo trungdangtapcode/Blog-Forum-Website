@@ -2,17 +2,25 @@ import { auth0Client } from "@/lib/auth0-client";
 import { DISPATCH_URL } from "@/lib/config";
 import axios from "axios";
 
+export interface Author {
+  _id: string;
+  name?: string;
+  email?: string;
+  avatar?: string;
+  fullName?: string;
+}
+
 export interface Post {
   _id: string;
   title: string;
   content: string;
-  author: string;
+  author: string | Author;
   likes: number;
   comments: string[];
   category: string;
   summary?: string;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: string | Date;
+  updatedAt: string | Date;
 }
 
 export interface CreatePostInput {
@@ -36,6 +44,7 @@ export async function getPosts() {
         // reverse the list
         fetchedPosts.reverse();
       }
+      console.log('Fetched posts:', fetchedPosts);
       return response.data;
     }
     return [];

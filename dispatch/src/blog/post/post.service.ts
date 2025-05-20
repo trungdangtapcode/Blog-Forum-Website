@@ -22,13 +22,12 @@ export class PostService {
     });
     return newPost.save();
   }
-
   async findAll(): Promise<Post[]> {
-    return this.postModel.find().exec();
+    return this.postModel.find().populate('author', 'name email avatar fullName').exec();
   }
 
   async findOne(id: string): Promise<Post | null> {
-    return this.postModel.findById(id).exec();
+    return this.postModel.findById(id).populate('author', 'name email avatar').exec();
   }
 
   async update(id: string, updatePostDto: UpdatePostDto): Promise<Post | null> {
