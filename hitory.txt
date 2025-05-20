@@ -28,3 +28,10 @@ Oauth2
 
 hmr webpack
 nodemon
+
+
+client-side auth + navigating = BUG
+fix, use:
+	'Cache-Control': 'no-cache, no-store, must-revalidate',
+	'Pragma': 'no-cache',
+	'Expires': '0'

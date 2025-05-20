@@ -35,11 +35,10 @@ import {
 import toast from "react-hot-toast";
 
 interface CommentSectionProps {
-  postId: string;
-  initialComments?: string[]; // Comment IDs from the post
+  postId: string;  initialComments?: string[]; // Comment IDs from the post
 }
 
-const CommentSection: React.FC<CommentSectionProps> = ({ postId }) => {
+const FixedCommentSection: React.FC<CommentSectionProps> = ({ postId }) => {
   const [comments, setComments] = useState<CommentType[]>([]);
   const [newComment, setNewComment] = useState("");
   const [loading, setLoading] = useState(true);
@@ -88,6 +87,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ postId }) => {
       new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     );
   };
+
   // Check auth status
   useEffect(() => {
     const checkAuth = async () => {
@@ -113,6 +113,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ postId }) => {
     
     checkAuth();
   }, []);
+
   // Fetch comments
   useEffect(() => {
     const fetchComments = async () => {
@@ -120,15 +121,19 @@ const CommentSection: React.FC<CommentSectionProps> = ({ postId }) => {
       try {
         const fetchedComments = await getCommentsByPostId(postId);
         setComments(organizeComments(fetchedComments));
-          // If user is authenticated, fetch their votes for each comment
+        
+        // If user is authenticated, fetch their votes for each comment
         if (isAuthenticated) {
           const votes: Record<string, string> = {};
           
-          for (const comment of fetchedComments) {            try {
+          // Fetch votes for comments one at a time, but don't let errors stop the whole process
+          for (const comment of fetchedComments) {
+            try {
               const voteData = await getUserCommentVote(comment._id);
               if (voteData && voteData.action) {
                 votes[comment._id] = voteData.action;
-              }            } catch {
+              }
+            } catch {
               // Silently handle vote fetch errors - they shouldn't break comment loading
               console.log(`Couldn't get vote for comment ${comment._id}`);
             }
@@ -146,6 +151,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ postId }) => {
 
     fetchComments();
   }, [postId, isAuthenticated]);
+
   // Post a new comment
   const handleSubmitComment = async () => {
     if (!newComment.trim() || !isAuthenticated) return;
@@ -192,7 +198,8 @@ const CommentSection: React.FC<CommentSectionProps> = ({ postId }) => {
         post: postId,
         parentComment: replyingTo
       };
-        const createdReply = await createComment(replyData);
+      
+      const createdReply = await createComment(replyData);
       
       // Ensure the reply has proper author information
       if (!createdReply.author || !createdReply.author.fullName) {
@@ -403,6 +410,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ postId }) => {
     setReplyingTo(null);
     setReplyContent("");
   };
+  
   // Check if current user is the author of a comment
   const isCommentAuthor = (author: AuthorInfo) => {
     return currentUser && author && author._id === currentUser.id;
@@ -415,13 +423,15 @@ const CommentSection: React.FC<CommentSectionProps> = ({ postId }) => {
     const userVote = userVotes[comment._id];
     const isVoting = submittingVote === comment._id;
     
-    return (      <div key={comment._id} className={`border-t border-gray-100 dark:border-gray-800 pt-4 ${level > 0 ? 'ml-8' : ''}`}>
+    return (
+      <div key={comment._id} className={`border-t border-gray-100 dark:border-gray-800 pt-4 ${level > 0 ? 'ml-8' : ''}`}>
         <div className="flex space-x-3">
           <Avatar className="h-10 w-10">
             <AvatarImage src={comment.author?.avatar || "/default-avatar.png"} />
             <AvatarFallback>{(comment.author?.fullName || 'User').substring(0, 2).toUpperCase()}</AvatarFallback>
           </Avatar>
-            <div className="flex-1">
+          
+          <div className="flex-1">
             <div className="flex items-center justify-between">
               <div>
                 <p className="font-medium text-sm">{comment.author?.fullName || 'Anonymous User'}</p>
@@ -432,7 +442,8 @@ const CommentSection: React.FC<CommentSectionProps> = ({ postId }) => {
                   }
                 </span>
               </div>
-                {isAuthenticated && comment.author && isCommentAuthor(comment.author) && (
+              
+              {isAuthenticated && comment.author && isCommentAuthor(comment.author) && (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
@@ -587,7 +598,8 @@ const CommentSection: React.FC<CommentSectionProps> = ({ postId }) => {
             {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Post Comment
           </Button>
-        </div>      ) : (
+        </div>
+      ) : (
         <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-800 rounded-md text-center">
           <p className="text-gray-600 dark:text-gray-400">Please sign in to comment</p>
           <Button variant="outline" className="mt-2" onClick={() => window.location.href = '/api/auth/login'}>
@@ -615,10 +627,9 @@ const CommentSection: React.FC<CommentSectionProps> = ({ postId }) => {
           <div className="text-center py-6">
             <p className="text-gray-500 dark:text-gray-400">No comments yet. Be the first to comment!</p>
           </div>
-        )}
-      </div>
+        )}      </div>
     </div>
   );
 };
 
-export default CommentSection;
+export default FixedCommentSection;

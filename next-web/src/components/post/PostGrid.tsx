@@ -98,17 +98,16 @@ const PostGrid: FC<PostGridProps> = ({ initialPosts = [] }) => {
                 {category.name}
               </TabsTrigger>
             ))}
-          </TabsList>
-          
+          </TabsList>          
           {/* Use the CategoryTabContent for "all" tab */}
           <TabsContent value="all" className="mt-0">
-            <CategoryTabContent loading={loading} filteredPosts={filteredPosts} />
+            <CategoryTabContent loading={loading} filteredPosts={filteredPosts} initialPostCount={6} />
           </TabsContent>
           
           {/* For other categories */}
           {categories.slice(1).map((category) => (
             <TabsContent key={category.id} value={category.id} className="mt-0">
-              <CategoryTabContent loading={loading} filteredPosts={filteredPosts} />
+              <CategoryTabContent loading={loading} filteredPosts={filteredPosts} initialPostCount={6} />
             </TabsContent>
           ))}
         </Tabs>

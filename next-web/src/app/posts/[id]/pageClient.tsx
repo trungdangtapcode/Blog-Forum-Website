@@ -10,7 +10,7 @@ import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import toast, { Toaster } from 'react-hot-toast';
-import CommentSection from "@/components/post/CommentSection";
+import CommentSection from "@/components/post/FixedCommentSection";
 import Link from "next/link";
 
 import type { FC } from "react";
@@ -20,12 +20,13 @@ interface PostDetailClientProps {
   params: { id: string };
 }
 
-const PostDetailClient: FC<PostDetailClientProps> = ({ params }) => {
-  const [post, setPost] = useState<Post | null>(null);
+const PostDetailClient: FC<PostDetailClientProps> = ({ params }) => {  const [post, setPost] = useState<Post | null>(null);
   const [loading, setLoading] = useState(true);
   const [author, setAuthor] = useState<
    AccountPublicProfile | null>(null);
-  const [userReaction, setUserReaction] = useState<'like' | 'dislike' | null>(null);    useEffect(() => {
+  const [userReaction, setUserReaction] = useState<'like' | 'dislike' | null>(null);
+  // Add state to track if a reaction is in progress to prevent spamming
+  const [reactionInProgress, setReactionInProgress] = useState(false);useEffect(() => {
     const fetchPost = async () => {
       try {
         const { id } = await params;
@@ -56,17 +57,21 @@ const PostDetailClient: FC<PostDetailClientProps> = ({ params }) => {
     };
 
     fetchPost();
-  }, [params]);
-  const handleReaction = async (action: 'like' | 'dislike') => {
+  }, [params]);  const handleReaction = async (action: 'like' | 'dislike') => {
     if (!post) return;
+    
+    // Prevent rapid successive clicks - return early if a reaction is already in progress
+    if (reactionInProgress) {
+      toast.error("Please wait for the previous action to complete");
+      return;
+    }
+    
+    // Set reaction in progress to prevent multiple calls
+    setReactionInProgress(true);
     
     try {
       // Toggle reaction if user already reacted the same way
       if (userReaction === action) {
-        // Remove the reaction
-        await unlikePost(post._id);
-        setUserReaction(null);
-        
         // Update UI first for responsiveness based on the backend logic
         setPost(prev => {
           if (!prev) return prev;
@@ -81,6 +86,11 @@ const PostDetailClient: FC<PostDetailClientProps> = ({ params }) => {
           };
         });
         
+        // Update UI optimistically
+        setUserReaction(null);
+        
+        // Make API call
+        await unlikePost(post._id);
         toast.success(`Your ${action} has been removed`);
       } else {
         // Update UI first for responsiveness
@@ -106,14 +116,43 @@ const PostDetailClient: FC<PostDetailClientProps> = ({ params }) => {
           };
         });
         
+        // Update UI optimistically
         setUserReaction(action);
-        await likePost(post._id, action);
         
+        // Make API call
+        await likePost(post._id, action);
         toast.success(`Post ${action === 'like' ? 'liked' : 'disliked'} successfully`);
       }
     } catch (error) {
       console.error("Error reacting to post:", error);
       toast.error("Failed to register your reaction. Please try again.");
+      
+      // Revert the optimistic UI updates on error
+      setUserReaction(prevReaction => {
+        // If we were toggling a reaction off, revert to the previous reaction
+        if (prevReaction === action) {
+          return action;
+        } 
+        // If we were setting a new reaction, revert to null or the previous reaction
+        else {
+          return userReaction;
+        }
+      });
+        // Restore the original post state
+      try {
+        const { id } = params;
+        const fetchedPost = await getPostById(id);
+        setPost(fetchedPost);
+      } catch (error) {
+        console.error("Error restoring post state:", error);
+        // Keep current state if fetch fails
+      }
+    } finally {
+      // Always reset the reaction progress status regardless of success/failure
+      // Add a small delay to prevent immediate re-clicking
+      setTimeout(() => {
+        setReactionInProgress(false);
+      }, 500);
     }
   };
   if (loading) {
@@ -214,14 +253,14 @@ const PostDetailClient: FC<PostDetailClientProps> = ({ params }) => {
             }`}>
               {post.likes || 0} votes
             </div>
-            
-            <Button
+              <Button
               variant="ghost"
               size="sm"
               onClick={() => handleReaction('like')}
               className={userReaction === 'like' ? 'text-green-600 bg-green-50 dark:bg-green-900/30' : ''}
+              disabled={reactionInProgress}
             >
-              <ThumbsUp className="h-5 w-5 mr-2" />
+              <ThumbsUp className={`h-5 w-5 mr-2 ${reactionInProgress ? 'animate-pulse' : ''}`} />
               {userReaction === 'like' ? 'Liked' : 'Like'}
             </Button>
             
@@ -230,8 +269,9 @@ const PostDetailClient: FC<PostDetailClientProps> = ({ params }) => {
               size="sm"
               onClick={() => handleReaction('dislike')}
               className={userReaction === 'dislike' ? 'text-red-600 bg-red-50 dark:bg-red-900/30' : ''}
+              disabled={reactionInProgress}
             >
-              <ThumbsDown className="h-5 w-5 mr-2" />
+              <ThumbsDown className={`h-5 w-5 mr-2 ${reactionInProgress ? 'animate-pulse' : ''}`} />
               Dislike
             </Button>
           </div>

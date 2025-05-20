@@ -93,19 +93,24 @@ export async function createPost(postData: CreatePostInput) {
 }
 
 export async function likePost(postId: string, action: 'like' | 'dislike') {
-  const token = await auth0Client.getToken();
-  if (!token) {
-    throw new Error('Session not found');
-  }
-
   try {
+    const token = await auth0Client.getToken();
+    if (!token) {
+      throw new Error('Session not found');
+    }
+
+    // Add timestamp to prevent caching issues
+    const timestamp = new Date().getTime();
     const response = await axios.put(
-      `${DISPATCH_URL}/post/like`,
+      `${DISPATCH_URL}/post/like?_t=${timestamp}`,
       { post: postId, action },
       {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0'
         },
       }
     );
@@ -115,24 +120,37 @@ export async function likePost(postId: string, action: 'like' | 'dislike') {
     }
     throw new Error('Failed to like post');
   } catch (error) {
-    console.error('Error liking post:', error);
+    // Log error without exposing the token
+    console.error('Error liking post:', 
+      error instanceof Error ? error.message : 'Unknown error');
+    
+    // Check for 401 Unauthorized error
+    if (axios.isAxiosError(error) && error.response?.status === 401) {
+      console.error('Authentication error when liking post - token may be invalid');
+    }
+    
     throw error;
   }
 }
 
 export async function unlikePost(postId: string) {
-  const token = await auth0Client.getToken();
-  if (!token) {
-    throw new Error('Session not found');
-  }
-
   try {
+    const token = await auth0Client.getToken();
+    if (!token) {
+      throw new Error('Session not found');
+    }
+
+    // Add timestamp to prevent caching issues
+    const timestamp = new Date().getTime();
     const response = await axios.delete(
-      `${DISPATCH_URL}/post/like`,
+      `${DISPATCH_URL}/post/like?_t=${timestamp}`,
       {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0'
         },
         data: { post: postId },
       }
@@ -143,27 +161,38 @@ export async function unlikePost(postId: string) {
     }
     throw new Error('Failed to unlike post');
   } catch (error) {
-    console.error('Error unliking post:', error);
+    // Log error without exposing the token
+    console.error('Error unliking post:', 
+      error instanceof Error ? error.message : 'Unknown error');
+    
+    // Check for 401 Unauthorized error
+    if (axios.isAxiosError(error) && error.response?.status === 401) {
+      console.error('Authentication error when unliking post - token may be invalid');
+    }
+    
     throw error;
   }
 }
 
 export async function isPostLiked(postId: string) {
   const token = await auth0Client.getToken();
-  if (!token) {
-    return null;
-  }
-
   try {
-    // Using POST method instead of GET to ensure body data is sent correctly
-    // The controller will still handle it as a GET request on the server side
+    if (!token) {
+      return null;
+    }
+
+    // Add timestamp to prevent caching issues
+    const timestamp = new Date().getTime();
     const response = await axios.post(
-      `${DISPATCH_URL}/post/isliked`,
+      `${DISPATCH_URL}/post/isliked?_t=${timestamp}`,
       { post: postId },
       {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0'
         }
       }
     );
@@ -173,7 +202,17 @@ export async function isPostLiked(postId: string) {
     }
     return null;
   } catch (error) {
-    console.error('Error checking if post is liked:', error);
+    // Log error without exposing the token
+    console.error('Error checking if post is liked:', 
+      error instanceof Error ? error.message : 'Unknown error');
+    
+    // Check for 401 Unauthorized error
+    if (axios.isAxiosError(error) && error.response?.status === 401) {
+      console.error('Authentication error when checking post like status - token may be invalid');
+      console.error('Token =',token);
+      console.error('Blog Id =',postId);
+    }
+    
     return null;
   }
 }

@@ -16,6 +16,10 @@ export async function middleware(request: NextRequest) {
   if (request.nextUrl.pathname==='/') {
     return authRes;
   }
+  // Allow direct API requests to go through without auth check
+  if (request.nextUrl.pathname.includes('/api/')) {
+    return NextResponse.next();
+  }
 
   const { origin } = new URL(request.url);
   const session = await auth0.getSession();
@@ -37,7 +41,8 @@ export const config = {
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico, sitemap.xml, robots.txt (metadata files)
+     * - API routes that should be accessible without authentication
      */
-    "/((?!_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt).*)",
+    "/((?!_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt|api/).*)",
   ],
 };
