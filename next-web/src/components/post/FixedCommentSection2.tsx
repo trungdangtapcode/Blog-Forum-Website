@@ -15,7 +15,7 @@ import {
 // Import our split components
 import { CommentForm } from "./comments/CommentForm";
 import { CommentList } from "./comments/CommentList";
-import { CommentType, UserInfo } from "./comments/types";
+import { UserInfo, CommentType } from "./comments/types";
 import { organizeComments } from "./comments/CommentUtils";
 
 interface CommentSectionProps {
@@ -115,7 +115,6 @@ const FixedCommentSection: React.FC<CommentSectionProps> = ({ postId }) => {
       console.log("Created comment:", createdComment);
       
       // Ensure the comment has proper author information
-      // The API response might not include complete author info, so we ensure it has it
       if (!createdComment.author || !createdComment.author.fullName) {
         createdComment.author = {
           _id: currentUser?.id || '',
