@@ -44,8 +44,8 @@ export class AccountController {
 		return profile;
 	}
 	
+	// not need to auth
 	@Post("/getPublicProfile/")
-	@UseGuards(Auth0Guard)
 	async getPublicProfilePOST(@Body() body: { userId: string }) {
 		console.log('Inside Account Controller');
 		const profile = await this.AccountService.getPublicProfile(body.userId);

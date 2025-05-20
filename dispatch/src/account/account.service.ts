@@ -52,32 +52,50 @@ export class AccountService {
         }
         // Optionally, you can exclude sensitive information here
         return profile;
-    }
+    }	private readonly logger = new Logger('AccountService');
+
 	async validateAccessToken(accessToken: string): Promise<any> {
 		try {
-			// Check cache first - using a consistent key format
-			const cacheKey = `auth0_token:${accessToken}`;
+			// Check cache first - using secure hash instead of raw token
+			const cacheKey = createCacheKey(accessToken);
 			const cachedUser = await this.cacheManager.get(cacheKey);
 			if (cachedUser) {
-				console.log('Using cached user data from AccountService');
+				this.logger.debug('Using cached user data from AccountService');
 				return cachedUser;
 			}
 
-			console.log('Cache miss: Fetching user from Auth0 API');
+			this.logger.debug('Cache miss: Fetching user from Auth0 API');
 			// If not in cache, make the API call
 			const url = `https://${process.env.AUTH0_DOMAIN}/userinfo`;
-			const response = await axios.get(url, {
-				headers: {
-					Authorization: `Bearer ${accessToken}`,
-				},
-			});
-
-			// Cache the result - for 15 minutes (900 seconds) to significantly reduce API calls
-			await this.cacheManager.set(cacheKey, response.data, 900);
 			
-			return response.data; // contains user info like sub, email, etc.
+			try {
+				const response = await axios.get(url, {
+					headers: {
+						Authorization: `Bearer ${accessToken}`,
+					},
+					timeout: 5000, // Set a timeout to avoid hanging connections
+				});
+
+				// Cache the result - for 30 minutes (1800 seconds) to significantly reduce API calls
+				// Using longer cache for tokens that have already been validated with Auth0
+				await this.cacheManager.set(cacheKey, response.data, 1800);
+				
+				return response.data; // contains user info like sub, email, etc.
+			} catch (axiosError) {
+				if (axiosError.response) {
+					// Auth0 responded with an error
+					this.logger.error(`Auth0 API error: ${axiosError.response.status} - ${axiosError.response.data?.error || 'Unknown error'}`);
+					if (axiosError.response.status === 429) {
+						this.logger.error('Rate limit exceeded with Auth0 API!');
+					}
+				} else if (axiosError.request) {
+					// No response received
+					this.logger.error('No response received from Auth0 API');
+				}
+				throw axiosError;
+			}
 		} catch (error) {
-			console.error('Auth0 API validation error:', error.message);
+			this.logger.error(`Auth0 API validation error: ${error.message}`);
 			throw new UnauthorizedException('Invalid Auth0 token');
 		}
 	}

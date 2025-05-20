@@ -5,6 +5,7 @@ import { passportJwtSecret } from 'jwks-rsa';
 import * as jwksRsa from 'jwks-rsa';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
+import { createCacheKey } from '../../utils/token-cache.util';
 
 @Injectable()
 export class Auth0Strategy extends PassportStrategy(Strategy, 'auth0') {
@@ -27,7 +28,6 @@ export class Auth0Strategy extends PassportStrategy(Strategy, 'auth0') {
       passReqToCallback: true, // This allows us to access the request in validate
 		});
 	  }
-
   async validate(request: any, payload: any) {
     // Extract the token from the request
     const authHeader = request.headers.authorization;
@@ -38,9 +38,9 @@ export class Auth0Strategy extends PassportStrategy(Strategy, 'auth0') {
       // Calculate TTL based on token expiration
       const now = Math.floor(Date.now() / 1000);
       const exp = payload.exp || now + 3600; // Default to 1 hour if no exp claim
-      const ttl = Math.max(60 * 15, exp - now); // At least 15 minutes, or until token expires
+      const ttl = Math.max(60 * 30, exp - now); // At least 30 minutes, or until token expires
       
-      const cacheKey = `auth0_token:${token}`;
+      const cacheKey = createCacheKey(token);
       const userData = {
         userId: payload.sub,
         email: payload.email,

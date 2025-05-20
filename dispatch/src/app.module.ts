@@ -6,6 +6,8 @@ import { ConfigModule} from '@nestjs/config';
 import { AccountModule } from './account/account.module';
 import { PostModule } from './blog/post/post.module';
 import { CacheModule } from '@nestjs/cache-manager';
+import * as redisStore from 'cache-manager-ioredis';
+import { TokenModule } from './utils/token.module';
 
 @Module({
   imports: [    ConfigModule.forRoot({
@@ -13,10 +15,21 @@ import { CacheModule } from '@nestjs/cache-manager';
       expandVariables: true, //${}
     }),
     CacheModule.register({
-      ttl: 900, // Default cache TTL in seconds (15 minutes)
-      max: 100, // Maximum number of items in cache
       isGlobal: true,
+      // Use memory store in development and Redis in production
+      ...(process.env.NODE_ENV === 'production' 
+        ? {
+            store: redisStore,
+            host: process.env.REDIS_HOST || 'localhost',
+            port: process.env.REDIS_PORT || 6379,
+            ttl: 1800, // 30 minutes default TTL
+            max: 500, // Maximum number of items in cache
+          } 
+        : {
+            ttl: 1800, // 30 minutes in seconds            max: 200, // Maximum number of items in cache
+          }),
     }),
+    TokenModule,
     AccountModule,
     PostModule,
     MongooseModule.forRoot(process.env.MONGO_URI),

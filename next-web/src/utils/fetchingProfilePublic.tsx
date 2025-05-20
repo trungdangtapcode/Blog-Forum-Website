@@ -37,6 +37,7 @@ export async function getPublicProfile(userId: string) {
 		return tmp
 	} catch (error) {
 		console.error('Error getting session:', error);
+		console.error('Error fetching public profile:', userId);
 		return tmp;
 	}
 }
