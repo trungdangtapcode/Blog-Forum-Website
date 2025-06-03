@@ -5,12 +5,13 @@ import { Post, getPostById, likePost, unlikePost, isPostLiked } from "@/utils/po
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
-import { ThumbsUp, ThumbsDown, Share2, Bookmark, ArrowLeft } from "lucide-react";
+import { ThumbsUp, ThumbsDown, Bookmark, ArrowLeft } from "lucide-react";
 import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import toast, { Toaster } from 'react-hot-toast';
-import CommentSection from "@/components/post/FixedCommentSection";
+import CommentSection from "@/components/post/FixedCommentSection2";
+import SharingBox from "@/components/post/SharingBox";
 import Link from "next/link";
 
 import type { FC } from "react";
@@ -275,11 +276,8 @@ const PostDetailClient: FC<PostDetailClientProps> = ({ params }) => {  const [po
               Dislike
             </Button>
           </div>
-          
-          <div className="flex gap-2">
-            <Button variant="outline" size="icon">
-              <Share2 className="h-4 w-4" />
-            </Button>
+            <div className="flex gap-2">
+            <SharingBox postId={post._id} postTitle={post.title} />
             
             <Button variant="outline" size="icon">
               <Bookmark className="h-4 w-4" />
