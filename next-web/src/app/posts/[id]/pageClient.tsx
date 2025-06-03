@@ -14,6 +14,10 @@ import CommentSection from "@/components/post/FixedCommentSection2";
 import SharingBox from "@/components/post/SharingBox";
 import SavePostButton from "@/components/post/SavePostButton";
 import Link from "next/link";
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { tomorrow } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
 import type { FC } from "react";
 import { getPublicProfile } from "@/utils/fetchingProfilePublic";
@@ -242,10 +246,45 @@ const PostDetailClient: FC<PostDetailClientProps> = ({ params }) => {  const [po
         
         {/* Post Content */}
         <div className="prose prose-lg dark:prose-invert max-w-none mb-10">
-          {post.content.split('\n').map((paragraph, index) => (
-            <p key={index}>{paragraph}</p>
-          ))}
-        </div>        {/* Post Actions */}
+          <ReactMarkdown 
+            remarkPlugins={[remarkGfm]}
+            components={{
+              h1: ({node, ...props}) => <h1 className="text-3xl font-bold mt-6 mb-4" {...props} />,
+              h2: ({node, ...props}) => <h2 className="text-2xl font-bold mt-5 mb-3" {...props} />,
+              h3: ({node, ...props}) => <h3 className="text-xl font-bold mt-4 mb-2" {...props} />,
+              h4: ({node, ...props}) => <h4 className="text-lg font-bold mt-3 mb-2" {...props} />,
+              h5: ({node, ...props}) => <h5 className="text-base font-bold mt-3 mb-1" {...props} />,
+              h6: ({node, ...props}) => <h6 className="text-sm font-bold mt-3 mb-1" {...props} />,
+              table: ({node, ...props}) => <div className="overflow-x-auto my-4"><table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700" {...props} /></div>,
+              thead: ({node, ...props}) => <thead className="bg-gray-100 dark:bg-gray-800" {...props} />,
+              tbody: ({node, ...props}) => <tbody {...props} />,
+              tr: ({node, ...props}) => <tr className="border-b border-gray-300 dark:border-gray-700" {...props} />,
+              th: ({node, ...props}) => <th className="px-4 py-2 text-left font-semibold border-r border-gray-300 dark:border-gray-700 last:border-r-0" {...props} />,
+              td: ({node, ...props}) => <td className="px-4 py-2 border-r border-gray-300 dark:border-gray-700 last:border-r-0" {...props} />,
+              code({node, inline, className, children, ...props}) {
+                const match = /language-(\w+)/.exec(className || '');
+                return !inline && match ? (
+                  <SyntaxHighlighter
+                    style={tomorrow}
+                    language={match[1]}
+                    PreTag="div"
+                    {...props}
+                  >
+                    {String(children).replace(/\n$/, '')}
+                  </SyntaxHighlighter>
+                ) : (
+                  <code className={`${className} bg-gray-100 dark:bg-gray-800 px-1 py-0.5 rounded text-sm`} {...props}>
+                    {children}
+                  </code>
+                )
+              }
+            }}
+          >
+            {post.content}
+          </ReactMarkdown>
+        </div>
+        
+        {/* Post Actions */}
         <div className="border bg-white dark:bg-gray-800 rounded-lg p-4 flex items-center justify-between">
           <div className="flex gap-4 items-center">
             {/* Votes count first, on the left */}
@@ -276,7 +315,8 @@ const PostDetailClient: FC<PostDetailClientProps> = ({ params }) => {  const [po
               <ThumbsDown className={`h-5 w-5 mr-2 ${reactionInProgress ? 'animate-pulse' : ''}`} />
               Dislike
             </Button>
-          </div>          <div className="flex gap-2">
+          </div>          
+          <div className="flex gap-2">
             <SharingBox postId={post._id} postTitle={post.title} />
             
             <SavePostButton postId={post._id} variant="outline" size="icon" />
