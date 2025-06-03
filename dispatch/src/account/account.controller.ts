@@ -1,4 +1,4 @@
-import {Body, Controller, Get, Post, Req, UseFilters, UseGuards, UsePipes, ValidationPipe} from '@nestjs/common';
+import {Body, Controller, Delete, Get, Post, Req, UseFilters, UseGuards, UsePipes, ValidationPipe} from '@nestjs/common';
 import { AccountService } from './account.service';
 import { Auth0Guard } from './guards/auth0.guard';
 import { AuthGuard } from '@nestjs/passport';
@@ -50,5 +50,28 @@ export class AccountController {
 		console.log('Inside Account Controller');
 		const profile = await this.AccountService.getPublicProfile(body.userId);
 		return profile;
+	}
+	
+	@Get("/savedPosts")
+	@UseGuards(Auth0Guard)
+	async getSavedPosts(@Req() req: Request & { user: any }) {
+		const email = req.user.email;
+		return await this.AccountService.getSavedPosts(email);
+	}
+	
+	@Post("/savedPosts")
+	@UseGuards(Auth0Guard)
+	@UsePipes(new ValidationPipe())
+	async addSavedPost(@Req() req: Request & { user: any }, @Body() body: { postId: string }) {
+		const email = req.user.email;
+		return await this.AccountService.addSavedPost(email, body.postId);
+	}
+	
+	@Delete("/savedPosts")
+	@UseGuards(Auth0Guard)
+	@UsePipes(new ValidationPipe())
+	async removeSavedPost(@Req() req: Request & { user: any }, @Body() body: { postId: string }) {
+		const email = req.user.email;
+		return await this.AccountService.removeSavedPost(email, body.postId);
 	}
 }

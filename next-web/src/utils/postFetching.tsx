@@ -78,7 +78,7 @@ export async function createPost(postData: CreatePostInput) {
   }
   console.log('postData:', postData)
   console.log('DISPATCH_URL:', DISPATCH_URL)
-  console.log('token:', token)
+  // console.log('token:', token)
   try {
     const response = await axios.post(
       `${DISPATCH_URL}/post/create`,

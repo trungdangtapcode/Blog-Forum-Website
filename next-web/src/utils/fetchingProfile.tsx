@@ -23,6 +23,8 @@ export async function getProfile() {
 			// Return temporary data instead of throwing an error
 			return tmp;
 		}
+		// console.log('Token:', token);
+
 		try {
 			const response = await axios.get(
 				process.env.NEXT_PUBLIC_DISPATCH_URL + '/account/getProfile/' || 'https://example.com',

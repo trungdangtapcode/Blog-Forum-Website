@@ -30,6 +30,9 @@ hmr webpack
 nodemon
 
 
+
+fix with t param?
+
 client-side auth + navigating = BUG
 fix, use:
 	'Cache-Control': 'no-cache, no-store, must-revalidate',

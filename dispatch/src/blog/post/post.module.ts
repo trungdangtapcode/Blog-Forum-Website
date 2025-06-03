@@ -6,6 +6,7 @@ import { Post, PostSchema } from './post.chema';
 import { AccountModule } from '@/account/account.module';
 import { Like, LikeSchema } from './like.schema';
 import { CommentModule } from './comment/comment.module';
+import { SavePostModule } from './savepost/savepost.module';
 // import { Auth0Guard } from 'src/account/guards/auth0.guard';
 // import { APP_GUARD } from '@nestjs/core';
 
@@ -13,6 +14,7 @@ import { CommentModule } from './comment/comment.module';
   imports: [
     AccountModule,
     CommentModule,
+    SavePostModule,
     MongooseModule.forFeature([{ name: Post.name, schema: PostSchema }]),
     MongooseModule.forFeature([{ name: Like.name, schema: LikeSchema }]),
   ],

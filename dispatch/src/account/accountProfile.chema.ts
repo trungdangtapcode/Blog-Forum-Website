@@ -23,6 +23,9 @@ export class AccountProfile extends Document {
 
   @Prop({ type: String, maxlength: 100, required: false })
   occupation?: string;
+
+  @Prop({ type: [{ type: String, ref: 'Post' }], default: [] })
+  savedPosts: string[];
 }
 
 export const AccountProfileSchema = SchemaFactory.createForClass(AccountProfile);

@@ -64,12 +64,17 @@ const LogginedMenu = ({accountProfile}: {accountProfile?: AccountProfile}) => {
           </Avatar>
           <p className="text-primary-200 hidden md:block">{accountProfile?.fullName}</p>
         </DropdownMenuTrigger>
-        <DropdownMenuContent className="bg-white text-primary-700 border rounded-md shadow-lg p-2">
-          <DropdownMenuItem
+        <DropdownMenuContent className="bg-white text-primary-700 border rounded-md shadow-lg p-2">          <DropdownMenuItem
             className="cursor-pointer hover:!bg-primary-700 hover:!text-primary-100 font-bold"
             onClick={() => router.push('/dashboard')}
           >
             Go to Dashboard
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            className="cursor-pointer hover:!bg-primary-700 hover:!text-primary-100"
+            onClick={() => router.push('/posts/saved')}
+          >
+            Saved Posts
           </DropdownMenuItem>
           <DropdownMenuSeparator className="bg-primary-200" />
           <DropdownMenuItem

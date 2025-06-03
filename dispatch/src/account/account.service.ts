@@ -50,8 +50,50 @@ export class AccountService {
         if (!profile) {
             throw new UnauthorizedException('Profile not found');
         }
-        // Optionally, you can exclude sensitive information here
-        return profile;
+        
+        // Create a new object without sensitive fields
+        const publicProfile = profile.toObject();
+        return publicProfile;
+    }
+    
+    async getSavedPosts(email: string): Promise<string[]> {
+        const profile = await this.profileModel.findOne({ email }).exec();
+        if (!profile) {
+            return [];
+        }
+        return profile.savedPosts || [];
+    }
+    
+    async addSavedPost(email: string, postId: string): Promise<string[]> {
+        const profile = await this.profileModel.findOne({ email }).exec();
+        if (!profile) {
+            throw new UnauthorizedException('Profile not found');
+        }
+        
+        if (!profile.savedPosts) {
+            profile.savedPosts = [];
+        }
+        
+        if (!profile.savedPosts.includes(postId)) {
+            profile.savedPosts.push(postId);
+            await profile.save();
+        }
+        
+        return profile.savedPosts;
+    }
+    
+    async removeSavedPost(email: string, postId: string): Promise<string[]> {
+        const profile = await this.profileModel.findOne({ email }).exec();
+        if (!profile) {
+            throw new UnauthorizedException('Profile not found');
+        }
+        
+        if (profile.savedPosts && profile.savedPosts.includes(postId)) {
+            profile.savedPosts = profile.savedPosts.filter(id => id !== postId);
+            await profile.save();
+        }
+        
+        return profile.savedPosts;
     }	private readonly logger = new Logger('AccountService');
 
 	async validateAccessToken(accessToken: string): Promise<any> {
