@@ -26,6 +26,9 @@ export class AccountProfile extends Document {
 
   @Prop({ type: [{ type: String, ref: 'Post' }], default: [] })
   savedPosts: string[];
+
+  @Prop({ type: Boolean, default: false })
+  isAdmin: boolean;
 }
 
 export const AccountProfileSchema = SchemaFactory.createForClass(AccountProfile);

@@ -22,9 +22,12 @@ export class Post extends Document {
 
   @Prop({ type: [{ type: String }], default: [] })
   comments: string[];
-
   @Prop({ default: 'general' })
   category: string;
+
+  @Prop({ default: false })
+  isVerified: boolean;
+  
   @Prop({ type: Date })
   createdAt: Date;
 

@@ -8,12 +8,6 @@ import { UpdateProfileDto } from './dto/UpdateProfile.dto';
 export class AccountController {
 	constructor(private AccountService: AccountService) {}
 	
-	@Get("/dashboard")
-	@UseGuards(CachedAuth0Guard)
-	async getDashboardStats(@Req() req: Request & { user: any }) {
-		const email = req.user.email;
-		return await this.AccountService.getDashboardStats(email);
-	}
 
 	@Get("/test")
 	@UseGuards(AuthGuard('auth0'))
@@ -57,13 +51,15 @@ export class AccountController {
 		const profile = await this.AccountService.getPublicProfile(body.userId);
 		return profile;
 	}
-		@Get("/savedPosts")
+		
+	@Get("/savedPosts")
 	@UseGuards(CachedAuth0Guard)
 	async getSavedPosts(@Req() req: Request & { user: any }) {
 		const email = req.user.email;
 		return await this.AccountService.getSavedPosts(email);
 	}
-		@Post("/savedPosts")
+		
+	@Post("/savedPosts")
 	@UseGuards(CachedAuth0Guard)
 	@UsePipes(new ValidationPipe())
 	async addSavedPost(@Req() req: Request & { user: any }, @Body() body: { postId: string }) {
@@ -78,7 +74,8 @@ export class AccountController {
 		return await this.AccountService.removeSavedPost(email, body.postId);
 	}
 
-	// Follow endpoints	@Post("/follow/:userId")
+	// Follow endpoints
+	@Post("/follow/:userId")
 	@UseGuards(CachedAuth0Guard)
 	async followUser(@Req() req: Request & { user: any }, @Param('userId') userId: string) {
 		const email = req.user.email;

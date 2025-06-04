@@ -1,4 +1,4 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Post } from './post.chema';
@@ -128,7 +128,6 @@ export class PostService {
       return [];
     }
   }
-
   // Helper method to validate MongoDB ObjectId format
   private isValidObjectId(id: string): boolean {
     try {
@@ -137,5 +136,19 @@ export class PostService {
     } catch (e) {
       return false;
     }
+  }
+  
+  async verifyPost(postId: string, verify: boolean = true): Promise<Post | null> {
+    console.log(postId)
+    if (!this.isValidObjectId(postId)) {
+      // Return error 400 if postId is not a valid ObjectId
+      throw new BadRequestException('Invalid post ID format');
+    }
+    
+    return this.postModel.findByIdAndUpdate(
+      postId, 
+      { isVerified: verify }, 
+      { new: true }
+    ).exec();
   }
 }

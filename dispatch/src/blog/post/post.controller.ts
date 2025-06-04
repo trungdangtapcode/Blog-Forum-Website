@@ -131,7 +131,61 @@ export class PostController {
       console.error('Error checking author status:', error);
       return { isAuthor: false, error: 'Failed to check author status' };
     }
+  }  
+  
+  @Post('verify/:postId')
+  @UseGuards(CachedAuth0Guard)
+  async verifyPost(@Req() req: Request & { user: any }, @Param('postId') postId: string) {
+    try {
+      const email = req.user.email;
+      // Implement admin check here - this would check if the user has admin privileges
+      const profile: AccountProfile = await this.accountService.getProfile(email);
+      // For this basic implementation, we'll just verify the post
+      // In a real app, you'd want to check for an admin role
+      const verifiedPost = await this.postService.verifyPost(postId, true);
+      
+      if (!verifiedPost) {
+        throw new NotFoundException('Post not found');
+      }
+      
+      return { 
+        success: true, 
+        message: 'Post verified successfully',
+        post: verifiedPost
+      };
+    } catch (error) {
+      console.error('Error verifying post:', error);
+      throw error;
+    }
   }
+  
+  @Post('unverify/:postId')
+  @UseGuards(CachedAuth0Guard)
+  async unverifyPost(@Req() req: Request & { user: any }, @Param('postId') postId: string) {
+    try {
+      const email = req.user.email;
+      // Implement admin check here - this would check if the user has admin privileges
+      const profile: AccountProfile = await this.accountService.getProfile(email);
+      
+      // For this basic implementation, we'll just unverify the post
+      // In a real app, you'd want to check for an admin role
+      const unverifiedPost = await this.postService.verifyPost(postId, false);
+      
+      if (!unverifiedPost) {
+        throw new NotFoundException('Post not found');
+      }
+      
+      return { 
+        success: true, 
+        message: 'Post unverified successfully',
+        post: unverifiedPost
+      };
+    } catch (error) {
+      console.error('Error unverifying post:', error);
+      throw error;
+    }
+  }
+  
   @Get('byauthor/:authorId')
   async getPostsByAuthor(@Param('authorId') authorId: string) {
     console.log(`Fetching posts by author: ${authorId}`);

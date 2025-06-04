@@ -44,3 +44,28 @@ fix, use:
 	'Cache-Control': 'no-cache, no-store, must-revalidate',
 	'Pragma': 'no-cache',
 	'Expires': '0'
+
+
+=======================
+
+git ls-files | awk '{
+    n = split($0, a, "/");
+    path = "";
+    for (i = 1; i <= n; ++i) {
+        path = path a[i];
+        if (!(path in seen)) {
+            for (j = 1; j < i; ++j) printf("│   ");
+            if (i < n) {
+                printf("├── %s\n", a[i]);
+            } else {
+                printf("└── %s\n", a[i]);
+            }
+            seen[path] = 1;
+        }
+        path = path "/";
+    }
+}'
+
+
+===================
+cs-684093bc-b414-800a-9e04-3da2b1a6f3ce

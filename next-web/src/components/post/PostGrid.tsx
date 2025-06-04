@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Search, PlusCircle } from "lucide-react";
 import Link from "next/link";
 import CategoryTabContent from "./CategoryTabContent";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface PostGridProps {
   initialPosts?: Post[];
@@ -22,11 +23,11 @@ const categories = [
   { id: "business", name: "Business" },
 ];
 
-const PostGrid: FC<PostGridProps> = ({ initialPosts = [] }) => {
-  const [posts, setPosts] = useState<Post[]>(initialPosts);
+const PostGrid: FC<PostGridProps> = ({ initialPosts = [] }) => {  const [posts, setPosts] = useState<Post[]>(initialPosts);
   const [loading, setLoading] = useState<boolean>(!initialPosts.length);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [activeCategory, setActiveCategory] = useState<string>("all");
+  const [showVerifiedOnly, setShowVerifiedOnly] = useState<boolean>(false);
   const initialPostCount = 12;
 
   useEffect(() => {
@@ -46,8 +47,7 @@ const PostGrid: FC<PostGridProps> = ({ initialPosts = [] }) => {
 
     fetchPosts();
   }, [initialPosts]);
-  
-  // Filter posts based on search query and category
+    // Filter posts based on search query, category, and verification status
   const filteredPosts = posts.filter((post) => {
     const matchesSearch = 
       searchQuery === "" || 
@@ -55,18 +55,20 @@ const PostGrid: FC<PostGridProps> = ({ initialPosts = [] }) => {
       post.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (post.summary && post.summary.toLowerCase().includes(searchQuery.toLowerCase()));
 
-    // Now we can filter by category since it's implemented
+    // Filter by category
     const matchesCategory = activeCategory === "all" || 
       post.category.toLowerCase() === activeCategory.toLowerCase();
+      
+    // Filter by verification status if the toggle is on
+    const matchesVerification = !showVerifiedOnly || post.isVerified;
 
-    return matchesSearch && matchesCategory;
+    return matchesSearch && matchesCategory && matchesVerification;
   });
 
   return (
     <div className="container mx-auto py-8 px-4 sm:px-6">
       <div className="mb-8">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">          
-          <div className="flex items-center gap-2">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">            <div className="flex items-center gap-2">
             <h2 className="text-3xl font-bold text-primary-800 dark:text-primary-100">
               Explore Posts
             </h2>
@@ -75,15 +77,33 @@ const PostGrid: FC<PostGridProps> = ({ initialPosts = [] }) => {
             </Link>
           </div>
           
-          <div className="relative w-full sm:w-80">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-            <Input
-              type="text"
-              placeholder="Search posts..."
-              className="pl-10 bg-white dark:bg-primary-800 border-gray-200 dark:border-primary-700"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
+          <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
+            <div className="relative w-full sm:w-80">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+              <Input
+                type="text"
+                placeholder="Search posts..."
+                className="pl-10 bg-white dark:bg-primary-800 border-gray-200 dark:border-primary-700"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+            
+            <div className="flex items-center space-x-2">              <Checkbox 
+                id="verified-filter" 
+                checked={showVerifiedOnly}
+                onCheckedChange={(checked: boolean | "indeterminate") => setShowVerifiedOnly(checked === true)}
+              />
+              <label 
+                htmlFor="verified-filter"
+                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex items-center"
+              >
+                <span>Verified Only</span>
+                <span className="inline-flex ml-1.5 bg-green-100 text-green-800 text-xs font-medium px-2 py-0.5 rounded dark:bg-green-900 dark:text-green-300">
+                  Verified
+                </span>
+              </label>
+            </div>
           </div>
         </div>
 

@@ -21,6 +21,7 @@ export interface Post {
   summary?: string;
   createdAt: string | Date;
   updatedAt: string | Date;
+  isVerified: boolean;
 }
 
 export interface CreatePostInput {
