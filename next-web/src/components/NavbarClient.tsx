@@ -63,12 +63,17 @@ const LogginedMenu = ({accountProfile}: {accountProfile?: AccountProfile}) => {
             </AvatarFallback>
           </Avatar>
           <p className="text-primary-200 hidden md:block">{accountProfile?.fullName}</p>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent className="bg-white text-primary-700 border rounded-md shadow-lg p-2">          <DropdownMenuItem
+        </DropdownMenuTrigger>        <DropdownMenuContent className="bg-white text-primary-700 border rounded-md shadow-lg p-2">          <DropdownMenuItem
             className="cursor-pointer hover:!bg-primary-700 hover:!text-primary-100 font-bold"
             onClick={() => router.push('/dashboard')}
           >
             Go to Dashboard
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            className="cursor-pointer hover:!bg-primary-700 hover:!text-primary-100"
+            onClick={() => router.push(`/profile/${accountProfile?._id}`)}
+          >
+            My Profile
           </DropdownMenuItem>
           <DropdownMenuItem
             className="cursor-pointer hover:!bg-primary-700 hover:!text-primary-100"

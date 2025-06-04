@@ -111,6 +111,24 @@ export class PostService {
     }
   }
   
+  async findByAuthor(authorId: string): Promise<Post[]> {
+    try {
+      // Validate MongoDB ObjectId format
+      if (!this.isValidObjectId(authorId)) {
+        console.error(`Invalid MongoDB ObjectId format for authorId: ${authorId}`);
+        return [];
+      }
+      
+      return this.postModel.find({ author: authorId })
+        .populate('author', 'name email avatar fullName')
+        .sort({ createdAt: -1 }) // Sort by creation date, newest first
+        .exec();
+    } catch (error) {
+      console.error(`Error finding posts by author: ${error}`);
+      return [];
+    }
+  }
+
   // Helper method to validate MongoDB ObjectId format
   private isValidObjectId(id: string): boolean {
     try {

@@ -132,4 +132,23 @@ export class PostController {
       return { isAuthor: false, error: 'Failed to check author status' };
     }
   }
+  @Get('byauthor/:authorId')
+  async getPostsByAuthor(@Param('authorId') authorId: string) {
+    console.log(`Fetching posts by author: ${authorId}`);
+    
+    if (!authorId) {
+      console.warn('Author ID is required but not provided');
+      return { error: 'Author ID is required' };
+    }
+    
+    try {
+      const posts = await this.postService.findByAuthor(authorId);
+      console.log(`Found ${posts.length} posts by author ${authorId}`);
+      return posts;
+    } catch (error) {
+      console.error('Error fetching posts by author:', error);
+      return { error: 'Failed to fetch posts by author' };
+    }
+  }
+
 }

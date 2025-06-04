@@ -19,9 +19,7 @@ import {
   DialogDescription,
   DialogFooter,
   DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-  DialogClose
+  DialogTitle
 } from "@/components/ui/dialog";
 
 interface EditPostClientProps {

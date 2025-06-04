@@ -67,9 +67,11 @@ const PostCard: FC<PostCardProps> = ({ post }) => {
         <p className="text-gray-600 dark:text-gray-300 mb-4 text-sm">
           {truncatedContent}
         </p>
-        
-        <div className="flex items-center justify-between mt-4">          
-          <div className="flex items-center space-x-2">            
+          <div className="flex items-center justify-between mt-4">
+          <Link 
+            href={`/profile/${typeof post.author === 'object' ? post.author._id : post.author}`}
+            className="flex items-center space-x-2 group hover:text-primary-600 transition-colors"
+          >            
             <Avatar className="h-8 w-8">
               <AvatarImage src={
                 typeof post.author === 'object' && post.author.avatar 
@@ -77,22 +79,26 @@ const PostCard: FC<PostCardProps> = ({ post }) => {
                   : post.authorAvatar || "/default-avatar.png"
               } alt="Author Avatar" />
               <AvatarFallback>
-                {typeof post.author === "object" && post.author.name 
-                  ? post.author.name.charAt(0).toUpperCase() 
-                  : typeof post.author === "string" 
-                    ? post.author.charAt(0).toUpperCase() 
-                    : 'A'}
+                {typeof post.author === "object" && post.author.fullName
+                  ? post.author.fullName.substring(0, 2).toUpperCase()
+                  : typeof post.author === "object" && post.author.name 
+                    ? post.author.name.charAt(0).toUpperCase() 
+                    : typeof post.author === "string" 
+                      ? post.author.charAt(0).toUpperCase() 
+                      : 'A'}
               </AvatarFallback>
             </Avatar>
             <div>
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                {typeof post.author === "object" && post.author.name 
-                  ? post.author.name 
-                  : post.authorName || "Anonymous"}
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-primary-600">
+                {typeof post.author === "object" && post.author.fullName
+                  ? post.author.fullName
+                  : typeof post.author === "object" && post.author.name 
+                    ? post.author.name 
+                    : post.authorName || "Anonymous"}
               </span>
               <p className="text-xs text-gray-500 dark:text-gray-400">Author</p>
             </div>
-          </div>
+          </Link>
           
           <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
             <Clock className="h-4 w-4 mr-1" />

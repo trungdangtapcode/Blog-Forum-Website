@@ -240,17 +240,16 @@ const PostDetailClient: FC<PostDetailClientProps> = ({ params }) => {  const [po
               {post.createdAt ? format(new Date(post.createdAt), 'MMMM dd, yyyy') : "Unknown date"}
             </span>
           </div>
-          
-          <div className="flex items-center">
+            <Link href={`/profile/${post.author && typeof post.author !== 'string' ? post.author._id : post.author}`} className="flex items-center group">
             <Avatar className="h-10 w-10">
               <AvatarImage src={author?.avatar || "/default-avatar.png"} alt="Author Avatar" />
               <AvatarFallback>AU</AvatarFallback>
             </Avatar>
             <div className="ml-3">
-              <p className="font-medium">{author?.fullName || "Anonymous"}</p>
+              <p className="font-medium group-hover:text-primary-600 transition-colors">{author?.fullName || "Anonymous"}</p>
               <p className="text-sm text-gray-500 dark:text-gray-400">Author</p>
             </div>
-          </div>
+          </Link>
         </div>
         
         <Separator className="my-8" />

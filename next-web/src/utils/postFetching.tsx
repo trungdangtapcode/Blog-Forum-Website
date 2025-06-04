@@ -296,3 +296,28 @@ export async function isPostLiked(postId: string) {
     return null;
   }
 }
+
+export async function getPostsByAuthor(authorId: string) {
+  try {
+    // Add timestamp to prevent caching issues
+    const timestamp = new Date().getTime();
+    const response = await axios.get(
+      `${DISPATCH_URL}/post/byauthor/${authorId}?_t=${timestamp}`,
+      {
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0'
+        }
+      }
+    );
+    
+    if (response.status >= 200 && response.status < 300) {
+      return response.data;
+    }
+    return [];
+  } catch (error) {
+    console.error('Error fetching posts by author:', error);
+    return [];
+  }
+}
