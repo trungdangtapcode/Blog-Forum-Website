@@ -69,12 +69,55 @@ export class PostService {
   async countLikes(postId: string): Promise<number> {
     return this.likeModel.countDocuments({ post: postId });
   }
-
   async isLiked(userId: string, postId: string) {
     const like = await this.likeModel.findOne({ user: userId, post: postId });
     if (like){
       return {action: like.action};
     }
     return null;
+  }  
+  
+  
+  async isAuthor(postId: string, userId: string): Promise<boolean> {
+    // Handle invalid inputs
+    if (!postId || !userId) {
+      // console.log(`Invalid input: postId=${postId}, userId=${userId}`);
+      return false;
+    }
+
+    try {
+      // console.log(`Attempting to find post with ID: ${postId}`);
+      
+      // Validate MongoDB ObjectId format
+      if (!this.isValidObjectId(postId)) {
+        console.error(`Invalid MongoDB ObjectId format: ${postId}`);
+        return false;
+      }
+      
+      const post = await this.postModel.findById(postId).exec();
+      
+      if (!post) {
+        // console.log(`Post not found with ID: ${postId}`);
+        return false;
+      }
+      
+      const authorId = post.author.toString();
+      const result = authorId === userId.toString();
+      // console.log(`Checking author: postId=${postId}, authorId=${authorId}, userId=${userId}, result=${result}`);
+      return result;
+    } catch (error) {
+      console.error(`Error in isAuthor check: ${error}`);
+      return false;
+    }
+  }
+  
+  // Helper method to validate MongoDB ObjectId format
+  private isValidObjectId(id: string): boolean {
+    try {
+      // MongoDB ObjectId should be a 24-character hex string
+      return /^[0-9a-fA-F]{24}$/.test(id);
+    } catch (e) {
+      return false;
+    }
   }
 }

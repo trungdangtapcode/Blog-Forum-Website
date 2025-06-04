@@ -29,9 +29,14 @@ Oauth2
 hmr webpack
 nodemon
 
+react-syntax-highlighter
+remark-gfm
 
+cached
 
 fix with t param?
+
+
 
 client-side auth + navigating = BUG
 fix, use:

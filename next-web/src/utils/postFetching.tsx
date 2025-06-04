@@ -101,6 +101,77 @@ export async function createPost(postData: CreatePostInput) {
   }
 }
 
+export async function updatePost(id: string, postData: Partial<CreatePostInput>) {
+  const token = await auth0Client.getToken();
+  if (!token) {
+    throw new Error('Session not found');
+  }
+  
+  try {
+    const response = await axios.put(
+      `${DISPATCH_URL}/post/update/${id}`,
+      postData,
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      }
+    );
+    
+    if (response.status >= 200 && response.status < 300) {
+      return response.data;
+    }
+    throw new Error('Failed to update post');
+  } catch (error) {
+    console.error('Error updating post:', error);
+    throw error;
+  }
+}
+
+export async function isPostAuthor(postId: string): Promise<boolean> {
+  // Check if postId is valid
+  if (!postId) {
+    console.error('Invalid post ID provided to isPostAuthor:', postId);
+    return false;
+  }
+
+  try {
+    const token = await auth0Client.getToken();
+    if (!token) {
+      console.warn('No authentication token available, user is not logged in');
+      return false; // Not logged in, definitely not the author
+    }
+    
+    console.log(`Checking author for post: ${postId}`);
+    console.log(`API endpoint: ${DISPATCH_URL}/post/isauthor/${postId}`);
+    
+    const response = await axios.get(
+      `${DISPATCH_URL}/post/isauthor/${postId}`,
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      }
+    );
+    
+    console.log('Author check response:', response.data);
+    
+    if (response.status >= 200 && response.status < 300) {
+      return response.data.isAuthor;
+    }
+    return false;
+  } catch (error) {
+    console.error('Error checking if user is post author:', error);
+    if (axios.isAxiosError(error)) {
+      console.error('Request failed with status:', error.response?.status);
+      console.error('Response data:', error.response?.data);
+    }
+    return false;
+  } 
+}
+
 export async function likePost(postId: string, action: 'like' | 'dislike') {
   try {
     const token = await auth0Client.getToken();
