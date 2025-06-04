@@ -9,6 +9,8 @@ import {
 import { Request } from 'express';
 import { TokenService } from '../../utils/token.service';
 
+
+//Dont use this, use CachedAuth0Guard instead
 @Injectable()
 export class Auth0Guard implements CanActivate {
   private readonly logger = new Logger('Auth0Guard');

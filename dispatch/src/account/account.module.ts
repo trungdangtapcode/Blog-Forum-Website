@@ -6,27 +6,34 @@ import { PassportModule } from '@nestjs/passport';
 import { Auth0Strategy } from './strategies/auth0.strategy';
 import { MongooseModule } from '@nestjs/mongoose';
 import { AccountProfile, AccountProfileSchema } from './accountProfile.chema';
-import { Auth0Guard } from './guards/auth0.guard';
+import { CachedAuth0Guard } from './guards/cached-auth0.guard';
+import { Follow, FollowSchema } from './follow.schema';
+import { Post, PostSchema } from '../blog/post/post.chema';
 
 //account ~ profile ~ user
 @Module({
     imports:[
-        PassportModule,
-		MongooseModule.forFeature([
+        PassportModule,		MongooseModule.forFeature([
             {
                 name: AccountProfile.name,
                 schema: AccountProfileSchema
             },
-
+            {
+                name: Follow.name,
+                schema: FollowSchema
+            },
+            {
+                name: Post.name,
+                schema: PostSchema
+            }
         ]),
 		JwtModule.register({})
-    ],
-    providers:[
-        AccountService, Auth0Strategy, Auth0Guard
+    ],    providers:[
+        AccountService, Auth0Strategy, CachedAuth0Guard
     ]
     ,
     controllers: [AccountController],
-    exports: [AccountService, Auth0Guard]
+    exports: [AccountService, CachedAuth0Guard]
 })
 
 export class AccountModule {};

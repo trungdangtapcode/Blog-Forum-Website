@@ -7,7 +7,7 @@ import { AccountModule } from '@/account/account.module';
 import { Like, LikeSchema } from './like.schema';
 import { CommentModule } from './comment/comment.module';
 import { SavePostModule } from './savepost/savepost.module';
-// import { Auth0Guard } from 'src/account/guards/auth0.guard';
+// import { CachedAuth0Guard } from 'src/account/guards/cached-auth0.guard';
 // import { APP_GUARD } from '@nestjs/core';
 
 @Module({
@@ -20,10 +20,9 @@ import { SavePostModule } from './savepost/savepost.module';
   ],
   controllers: [PostController],
   providers: [
-    PostService,
-    // {
+    PostService,    // {
     //   provide: APP_GUARD,
-    //   useClass: Auth0Guard,
+    //   useClass: CachedAuth0Guard,
     // },
   ],
 })

@@ -2,17 +2,18 @@
 
 import { useEffect, useState } from "react";
 import { getPublicProfile } from "@/utils/fetchingProfilePublic";
-import { getPostsByAuthor, Post } from "@/utils/postFetching";
+import { getPostsByAuthor, Post, followUser, unfollowUser, getFollowCounts, isFollowing } from "@/utils/postFetching";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, MapPin, Briefcase, Calendar } from "lucide-react";
+import { ArrowLeft, MapPin, Briefcase, Calendar, UserPlus, UserMinus } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import Link from "next/link";
 import toast, { Toaster } from 'react-hot-toast';
+import { auth0Client } from "@/lib/auth0-client";
 
 interface AccountPublicProfile {
   _id: string;
@@ -26,6 +27,14 @@ interface AccountPublicProfile {
   joinedDate?: Date | string;
 }
 
+interface User {
+  sub: string;
+  email?: string;
+  name?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [key: string]: any;
+}
+
 interface ProfilePageClientProps {
   params: { id: string };
 }
@@ -34,6 +43,27 @@ const ProfilePageClient = ({ params }: ProfilePageClientProps) => {
   const [profile, setProfile] = useState<AccountPublicProfile | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
+  const [followCounts, setFollowCounts] = useState({ followersCount: 0, followingCount: 0 });
+  const [isUserFollowing, setIsUserFollowing] = useState(false);
+  const [isFollowLoading, setIsFollowLoading] = useState(false);  const [user, setUser] = useState<User | null>(null);
+  const [userLoading, setUserLoading] = useState(true);
+
+  // Fetch user session
+  useEffect(() => {
+    const fetchUser = async () => {      try {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const session: any = await auth0Client.getSession();
+        setUser(session?.user || null);
+      } catch (error) {
+        console.error("Error fetching user session:", error);
+        setUser(null);
+      } finally {
+        setUserLoading(false);
+      }
+    };
+
+    fetchUser();
+  }, []);
 
   useEffect(() => {
     const fetchProfileAndPosts = async () => {
@@ -53,6 +83,16 @@ const ProfilePageClient = ({ params }: ProfilePageClientProps) => {
         // Fetch posts by this author
         const authorPosts = await getPostsByAuthor(id);
         setPosts(Array.isArray(authorPosts) ? authorPosts : []);
+
+        // Fetch follow counts
+        const counts = await getFollowCounts(id);
+        setFollowCounts(counts);
+
+        // Check if current user is following this profile (if user is logged in)
+        if (user && !userLoading) {
+          const followStatus = await isFollowing(id);
+          setIsUserFollowing(followStatus);
+        }
       } catch (error) {
         console.error("Error fetching profile data:", error);
         toast.error("Failed to load profile. Please try again later.");
@@ -62,7 +102,34 @@ const ProfilePageClient = ({ params }: ProfilePageClientProps) => {
     };
 
     fetchProfileAndPosts();
-  }, [params]);
+  }, [params, user, userLoading]);
+
+  const handleFollowToggle = async () => {
+    if (!user || !profile) {
+      toast.error("Please log in to follow users");
+      return;
+    }
+
+    setIsFollowLoading(true);
+    try {
+      if (isUserFollowing) {
+        await unfollowUser(profile._id);
+        setIsUserFollowing(false);
+        setFollowCounts(prev => ({ ...prev, followersCount: prev.followersCount - 1 }));
+        toast.success("Unfollowed successfully");
+      } else {
+        await followUser(profile._id);
+        setIsUserFollowing(true);
+        setFollowCounts(prev => ({ ...prev, followersCount: prev.followersCount + 1 }));
+        toast.success("Followed successfully");
+      }
+    } catch (error) {
+      console.error("Error toggling follow:", error);
+      toast.error("Failed to update follow status");
+    } finally {
+      setIsFollowLoading(false);
+    }
+  };
 
   // Function to truncate post content for preview
   const truncateContent = (content: string, maxLength = 150) => {
@@ -130,34 +197,74 @@ const ProfilePageClient = ({ params }: ProfilePageClientProps) => {
       <Link href="/posts" className="inline-flex items-center text-primary-600 hover:text-primary-800 mb-6">
         <ArrowLeft className="mr-2 h-4 w-4" /> Back to Posts
       </Link>
-      
-      {/* Profile Header */}
+        {/* Profile Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6 mb-8">
         <Avatar className="h-24 w-24">
           <AvatarImage src={profile.avatar || "/default-avatar.png"} alt="Profile Avatar" />
           <AvatarFallback>{profile.fullName?.substring(0, 2) || "AU"}</AvatarFallback>
         </Avatar>
-        <div>
-          <h1 className="text-3xl font-bold mb-2">{profile.fullName || "Anonymous User"}</h1>
-          
-          <div className="flex flex-wrap gap-3 text-gray-600 dark:text-gray-400 mb-3">
-            {profile.location && (
-              <div className="flex items-center">
-                <MapPin className="h-4 w-4 mr-1" />
-                <span>{profile.location}</span>
+        <div className="flex-1">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <h1 className="text-3xl font-bold mb-2">{profile.fullName || "Anonymous User"}</h1>
+              
+              {/* Follow counts */}
+              <div className="flex gap-4 mb-3">
+                <span className="text-sm text-gray-600 dark:text-gray-400">
+                  <strong>{followCounts.followersCount}</strong> followers
+                </span>
+                <span className="text-sm text-gray-600 dark:text-gray-400">
+                  <strong>{followCounts.followingCount}</strong> following
+                </span>
+                <span className="text-sm text-gray-600 dark:text-gray-400">
+                  <strong>{posts.length}</strong> posts
+                </span>
               </div>
-            )}
+              
+              <div className="flex flex-wrap gap-3 text-gray-600 dark:text-gray-400 mb-3">
+                {profile.location && (
+                  <div className="flex items-center">
+                    <MapPin className="h-4 w-4 mr-1" />
+                    <span>{profile.location}</span>
+                  </div>
+                )}
+                
+                {profile.occupation && (
+                  <div className="flex items-center">
+                    <Briefcase className="h-4 w-4 mr-1" />
+                    <span>{profile.occupation}</span>
+                  </div>
+                )}
+              </div>
+            </div>
             
-            {profile.occupation && (
-              <div className="flex items-center">
-                <Briefcase className="h-4 w-4 mr-1" />
-                <span>{profile.occupation}</span>
-              </div>
+            {/* Follow button - only show if user is logged in and viewing someone else's profile */}
+            {user && !userLoading && user.sub !== profile._id && (
+              <Button
+                onClick={handleFollowToggle}
+                disabled={isFollowLoading}
+                variant={isUserFollowing ? "outline" : "default"}
+                className="min-w-24"
+              >
+                {isFollowLoading ? (
+                  "Loading..."
+                ) : isUserFollowing ? (
+                  <>
+                    <UserMinus className="h-4 w-4 mr-2" />
+                    Unfollow
+                  </>
+                ) : (
+                  <>
+                    <UserPlus className="h-4 w-4 mr-2" />
+                    Follow
+                  </>
+                )}
+              </Button>
             )}
           </div>
           
           {profile.joinedDate && (
-            <div className="text-sm text-gray-500 dark:text-gray-500 flex items-center">
+            <div className="text-sm text-gray-500 dark:text-gray-500 flex items-center mt-2">
               <Calendar className="h-4 w-4 mr-1" />
               <span>Joined {format(new Date(profile.joinedDate), "MMMM yyyy")}</span>
             </div>

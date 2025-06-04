@@ -36,6 +36,7 @@ cached
 
 fix with t param?
 
+SplashScreen
 
 
 client-side auth + navigating = BUG

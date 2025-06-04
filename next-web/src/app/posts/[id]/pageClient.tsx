@@ -276,7 +276,8 @@ const PostDetailClient: FC<PostDetailClientProps> = ({ params }) => {  const [po
               th: ({...props}) => <th className="px-4 py-2 text-left font-semibold border-r border-gray-300 dark:border-gray-700 last:border-r-0" {...props} />,
               td: ({...props}) => <td className="px-4 py-2 border-r border-gray-300 dark:border-gray-700 last:border-r-0" {...props} />,              code: ({className, children, ...props}) => {
                 const match = /language-(\w+)/.exec(className || '');
-                return match ? (                  <SyntaxHighlighter
+                return match ? (                  
+                <SyntaxHighlighter
                     // @ts-expect-error - Type issue with the style prop
                     style={tomorrow}
                     language={match[1]}

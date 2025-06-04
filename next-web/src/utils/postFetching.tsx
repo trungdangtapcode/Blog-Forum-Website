@@ -315,9 +315,118 @@ export async function getPostsByAuthor(authorId: string) {
     if (response.status >= 200 && response.status < 300) {
       return response.data;
     }
+    return [];  } catch (error) {
+    console.error('Error fetching posts by author:', error);
+    return [];
+  }
+}
+
+// Follow functionality
+export async function followUser(userId: string) {
+  try {
+    const token = await auth0Client.getToken();
+    const response = await axios.post(
+      `${DISPATCH_URL}/account/follow/${userId}`,
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    
+    if (response.status >= 200 && response.status < 300) {
+      return response.data;
+    }
+    throw new Error('Failed to follow user');
+  } catch (error) {
+    console.error('Error following user:', error);
+    throw error;
+  }
+}
+
+export async function unfollowUser(userId: string) {
+  try {
+    const token = await auth0Client.getToken();
+    const response = await axios.delete(
+      `${DISPATCH_URL}/account/follow/${userId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    
+    if (response.status >= 200 && response.status < 300) {
+      return response.data;
+    }
+    throw new Error('Failed to unfollow user');
+  } catch (error) {
+    console.error('Error unfollowing user:', error);
+    throw error;
+  }
+}
+
+export async function getFollowCounts(userId: string) {
+  try {
+    const response = await axios.get(`${DISPATCH_URL}/account/follow/counts/${userId}`);
+    
+    if (response.status >= 200 && response.status < 300) {
+      return response.data;
+    }
+    return { followersCount: 0, followingCount: 0 };
+  } catch (error) {
+    console.error('Error fetching follow counts:', error);
+    return { followersCount: 0, followingCount: 0 };
+  }
+}
+
+export async function isFollowing(userId: string) {
+  try {
+    const token = await auth0Client.getToken();
+    const response = await axios.get(
+      `${DISPATCH_URL}/account/follow/status/${userId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    
+    if (response.status >= 200 && response.status < 300) {
+      return response.data.isFollowing;
+    }
+    return false;
+  } catch (error) {
+    console.error('Error checking follow status:', error);
+    return false;
+  }
+}
+
+export async function getFollowers(userId: string) {
+  try {
+    const response = await axios.get(`${DISPATCH_URL}/account/followers/${userId}`);
+    
+    if (response.status >= 200 && response.status < 300) {
+      return response.data;
+    }
     return [];
   } catch (error) {
-    console.error('Error fetching posts by author:', error);
+    console.error('Error fetching followers:', error);
+    return [];
+  }
+}
+
+export async function getFollowing(userId: string) {
+  try {
+    const response = await axios.get(`${DISPATCH_URL}/account/following/${userId}`);
+    
+    if (response.status >= 200 && response.status < 300) {
+      return response.data;
+    }
+    return [];
+  } catch (error) {
+    console.error('Error fetching following:', error);
     return [];
   }
 }
