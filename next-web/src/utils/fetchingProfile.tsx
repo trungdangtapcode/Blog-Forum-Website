@@ -29,7 +29,7 @@ export async function getProfile() {
 			const response = await axios.get(
 				process.env.NEXT_PUBLIC_DISPATCH_URL + '/account/getProfile/' || 'https://example.com',
 				{
-				  headers: {
+					headers: {
 					'Content-Type': 'application/json',
 					'Authorization': `Bearer ${token}`,
 				  },

@@ -24,6 +24,7 @@ export default async function DashboardPage() {
 
     // Get user profile data
     const profileData = await getProfile();
+
     
     // Get dashboard statistics from the API
     const dashboardData = await getDashboardStats();

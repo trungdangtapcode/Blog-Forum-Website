@@ -6,7 +6,7 @@ export class AccountProfile extends Document {
   @Prop({ type: String, required: true, unique: true })
   email: string;
 
-  @Prop({ type: String, maxlength: 1048576, required: false })
+  @Prop({ type: String, maxlength: 4194304, required: false, default: '/default-avatar.png' })
   avatar?: string;
 
   @Prop({ type: String, maxlength: 50, required: false })

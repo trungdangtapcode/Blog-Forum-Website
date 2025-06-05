@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import React from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { Notification } from '@/utils/notificationsApi';
@@ -18,6 +19,7 @@ export function NotificationItem({ notification, onMarkAsRead, onDelete }: Notif
   const isFollow = notification.type === 'follow';
   const isLike = notification.type === 'like';
   const isComment = notification.type === 'comment';
+  const isReply = notification.type === 'reply';
 
   const getNotificationContent = () => {
     return (
@@ -34,7 +36,7 @@ export function NotificationItem({ notification, onMarkAsRead, onDelete }: Notif
         
         <div className="flex-1">
           <div className="font-medium text-sm">
-            {notification.message}
+            {isReply ? `Reply: ${notification.message}` : notification.message}
           </div>
           <div className="text-xs text-muted-foreground">
             {formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true })}

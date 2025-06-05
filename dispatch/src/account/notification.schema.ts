@@ -7,13 +7,16 @@ export class Notification extends Document {
   recipient: string;
 
   @Prop({ required: true })
-  type: string; // 'new-post', 'follow', 'like', 'comment'
+  type: string; // 'new-post', 'follow', 'like', 'comment', 'reply'
 
   @Prop({ default: '' })
   message: string;
 
   @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Post', required: false })
   postId: string;
+
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Comment', required: false })
+  commentId: string; // Added to reference the comment for comment/reply notifications
 
   @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'AccountProfile', required: false })
   senderId: string;

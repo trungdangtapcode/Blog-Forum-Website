@@ -128,7 +128,7 @@ const DashboardClient: FC<DashboardClientProps> = ({
                 </div>
               )}
 
-              <Link href="/profile/edit" passHref>
+              <Link href="/profilepage" passHref>
                 <Button className="w-full" variant="outline">
                   <Edit3 className="mr-2 h-4 w-4" />
                   Edit Profile

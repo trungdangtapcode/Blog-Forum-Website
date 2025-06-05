@@ -1,14 +1,15 @@
-import { auth0Client } from "@/lib/auth0-client";
+import { auth0 } from "@/lib/auth0";
 import { DISPATCH_URL } from "@/lib/config";
 import axios from "axios";
 
 export async function getDashboardStats() {
   try {
-    const token = await auth0Client.getToken();
+    const token = (await auth0.getAccessToken()).token;
     if (!token) {
       throw new Error('Session not found');
     }
 
+    console.log('Token:', token);
     const response = await axios.get(
       `${DISPATCH_URL}/account/dashboard`,
       {

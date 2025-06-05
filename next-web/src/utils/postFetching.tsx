@@ -45,7 +45,6 @@ export async function getPosts() {
         // reverse the list
         fetchedPosts.reverse();
       }
-      console.log('Fetched posts:', fetchedPosts);
       return response.data;
     }
     return [];
@@ -77,8 +76,8 @@ export async function createPost(postData: CreatePostInput) {
   if (!token) {
     throw new Error('Session not found');
   }
-  console.log('postData:', postData)
-  console.log('DISPATCH_URL:', DISPATCH_URL)
+  // console.log('postData:', postData)
+  // console.log('DISPATCH_URL:', DISPATCH_URL)
   // console.log('token:', token)
   try {
     const response = await axios.post(
@@ -144,8 +143,8 @@ export async function isPostAuthor(postId: string): Promise<boolean> {
       return false; // Not logged in, definitely not the author
     }
     
-    console.log(`Checking author for post: ${postId}`);
-    console.log(`API endpoint: ${DISPATCH_URL}/post/isauthor/${postId}`);
+    // console.log(`Checking author for post: ${postId}`);
+    // console.log(`API endpoint: ${DISPATCH_URL}/post/isauthor/${postId}`);
     
     const response = await axios.get(
       `${DISPATCH_URL}/post/isauthor/${postId}`,
@@ -157,7 +156,7 @@ export async function isPostAuthor(postId: string): Promise<boolean> {
       }
     );
     
-    console.log('Author check response:', response.data);
+    // console.log('Author check response:', response.data);
     
     if (response.status >= 200 && response.status < 300) {
       return response.data.isAuthor;

@@ -20,13 +20,14 @@ export class AccountController {
 	@Post("/updateProfile")
 	@UsePipes(new ValidationPipe())
 	async updateProfile(@Req() req: Request, @Body() updateProfileDto: UpdateProfileDto) {
-		// console.log('Inside Account Controller', updateProfileDto);
+		console.log('Inside Account Controller', updateProfileDto);
 		const email = updateProfileDto.email;
 		console.log(email)
 		const message = await this.AccountService.updateProfile(email, updateProfileDto);
 		console.log(message)
 		return { message: "Test" };
 	}
+
 	@Get("/getProfile")
 	@UseGuards(CachedAuth0Guard)
 	async getProfile(@Req() req: Request  & { user: any }) {

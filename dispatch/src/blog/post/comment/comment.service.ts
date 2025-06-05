@@ -7,6 +7,7 @@ import { Post } from '../post.chema';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { UpdateCommentDto } from './dto/update-comment.dto';
 import { VoteCommentDto } from './dto/vote-comment.dto';
+import { NotificationService } from '@/account/notification.service';
 
 @Injectable()
 export class CommentService {
@@ -14,6 +15,7 @@ export class CommentService {
     @InjectModel(Comment.name) private readonly commentModel: Model<Comment>,
     @InjectModel(CommentVote.name) private readonly commentVoteModel: Model<CommentVote>,
     @InjectModel(Post.name) private readonly postModel: Model<Post>,
+    private readonly notificationService: NotificationService // Inject NotificationService
   ) {}
   async create(userId: string, createCommentDto: CreateCommentDto): Promise<Comment> {
     console.log(`Creating comment for post: ${createCommentDto.post}, parent: ${createCommentDto.parentComment || 'none'}`);
@@ -46,6 +48,15 @@ export class CommentService {
         { $push: { replies: savedComment._id } }
       );
 
+      // Send notification to the parent comment's author
+      await this.notificationService.createNotification({
+        recipient: parentComment.author.toString(),
+        type: 'reply',
+        message: `You have a new reply to your comment: ${createCommentDto.content}`,
+        commentId: savedComment._id.toString(),
+        senderId: userId,
+      });
+
       // Return the saved comment with author information
       const populatedComment = await this.commentModel.findById(savedComment._id)
         .populate('author', 'fullName avatar')
@@ -62,6 +73,16 @@ export class CommentService {
         createCommentDto.post,
         { $push: { comments: savedComment._id } }
       );
+
+      // Send notification to the post's author
+      await this.notificationService.createNotification({
+        recipient: post.author.toString(),
+        type: 'comment',
+        message: `You have a new comment on your post: ${createCommentDto.content}`,
+        postId: createCommentDto.post,
+        commentId: savedComment._id.toString(),
+        senderId: userId,
+      });
 
       // Return the saved comment with author information
       const populatedComment = await this.commentModel.findById(savedComment._id)

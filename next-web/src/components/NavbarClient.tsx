@@ -143,7 +143,7 @@ const NavbarClient = ({
 	isLoggedIn = false, 
 	accountProfile
 }: NavbarClientProps) => {
-	console.log("NavbarClient accountProfile", accountProfile)
+	// console.log("NavbarClient accountProfile", accountProfile)
 	const pathname = usePathname();
 	const router = useRouter();
 	const isDashboardPage = pathname.includes("/") || pathname.includes("/tenants");
@@ -187,14 +187,14 @@ const NavbarClient = ({
 				className="md:ml-4 bg-primary-50 text-primary-700 hover:bg-secondary-500 
 				hover:text-primary-50 cursor-pointer"
 				onClick={() =>
-					router.push('Search')
+					router.push('/posts')
 				}
 				>
 				{(
 					<>
 					<Search className="h-4 w-4" />
 					<span className="hidden md:block ml-2 w-full">
-						Search Properties
+						GO TO MAIN PAGE
 					</span>
 					</>
 				)}

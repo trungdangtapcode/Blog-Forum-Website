@@ -17,6 +17,7 @@ export class NotificationService {  constructor(
     type: string;
     message: string;
     postId?: string;
+    commentId?: string; // Added to support comment/reply notifications
     senderId?: string;
     sendEmail?: boolean;
   }): Promise<Notification> {
@@ -25,6 +26,7 @@ export class NotificationService {  constructor(
       type: dto.type,
       message: dto.message,
       postId: dto.postId,
+      commentId: dto.commentId, // Save commentId for comment/reply notifications
       senderId: dto.senderId,
       read: false,
       createdAt: new Date(),

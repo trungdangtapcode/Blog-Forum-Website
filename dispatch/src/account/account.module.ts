@@ -15,7 +15,8 @@ import { NotificationController } from './notification.controller';
 import { MailerModule } from '../mailer/mailer.module';
 
 //account ~ profile ~ user
-@Module({    imports:[
+@Module({    
+    imports:[
         PassportModule,
         MongooseModule.forFeature([
             {
@@ -40,8 +41,9 @@ import { MailerModule } from '../mailer/mailer.module';
     ],providers:[
         AccountService, Auth0Strategy, CachedAuth0Guard, NotificationService
     ]
-    ,    controllers: [AccountController, NotificationController],
-    exports: [AccountService, CachedAuth0Guard, NotificationService]
+    ,    
+    controllers: [AccountController, NotificationController],
+    exports: [AccountService, CachedAuth0Guard, NotificationService, MongooseModule] // Export MongooseModule to make NotificationModel available
 })
 
 export class AccountModule {};
