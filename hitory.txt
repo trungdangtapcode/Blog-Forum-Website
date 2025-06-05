@@ -46,6 +46,12 @@ fix, use:
 	'Expires': '0'
 
 
+@nestjs-modules/mailer nodemailer
+HTMLMinifier
+
+taskkill /F /IM node.exe
+
+
 =======================
 
 git ls-files | awk '{

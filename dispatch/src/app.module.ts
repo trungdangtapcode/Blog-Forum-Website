@@ -8,6 +8,7 @@ import { PostModule } from './blog/post/post.module';
 import { CacheModule } from '@nestjs/cache-manager';
 import * as redisStore from 'cache-manager-ioredis';
 import { TokenModule } from './utils/token.module';
+import { MailerModule } from './mailer/mailer.module';
 
 @Module({
   imports: [    ConfigModule.forRoot({
@@ -28,10 +29,10 @@ import { TokenModule } from './utils/token.module';
         : {
             ttl: 1800, // 30 minutes in seconds            max: 200, // Maximum number of items in cache
           }),
-    }),
-    TokenModule,
+    }),    TokenModule,
     AccountModule,
     PostModule,
+    MailerModule,
     MongooseModule.forRoot(process.env.MONGO_URI),
   ],
   controllers: [AppController],
