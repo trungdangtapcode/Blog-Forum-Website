@@ -15,6 +15,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
+import { NotificationsList } from "./ui/NotificationsList";
+import { getUnreadNotificationsCount } from "@/utils/notificationsApi";
 
 // import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 // import { SidebarTrigger } from "./ui/sidebar";
@@ -39,7 +41,27 @@ const LogoutHandler = (router: AppRouterInstance) => {
 
 const LogginedMenu = ({accountProfile}: {accountProfile?: AccountProfile}) => {
   const router = useRouter();
+  const [unreadCount, setUnreadCount] = React.useState(0);
 
+  // Fetch unread notifications count on load and periodically
+  React.useEffect(() => {
+    const fetchUnreadCount = async () => {
+      try {
+        const count = await getUnreadNotificationsCount();
+        setUnreadCount(count);
+      } catch (error) {
+        console.error('Failed to fetch unread notifications count:', error);
+      }
+    };
+
+    // Fetch immediately
+    fetchUnreadCount();
+
+    // Set up periodic polling every 30 seconds
+    const intervalId = setInterval(fetchUnreadCount, 30000);
+
+    return () => clearInterval(intervalId);
+  }, []);
 
   return (
     <>
@@ -47,23 +69,34 @@ const LogginedMenu = ({accountProfile}: {accountProfile?: AccountProfile}) => {
         <MessageCircle className="w-6 h-6 cursor-pointer text-primary-200 hover:text-primary-400" />
         <span className="absolute top-0 right-0 w-2 h-2 bg-secondary-700 rounded-full"></span>
       </div>
-      <div className="relative hidden md:block">
-        <Bell className="w-6 h-6 cursor-pointer text-primary-200 hover:text-primary-400" />
-        <span className="absolute top-0 right-0 w-2 h-2 bg-secondary-700 rounded-full"></span>
-      </div>
+      
+      <DropdownMenu>
+        <DropdownMenuTrigger className="focus:outline-none">
+          <div className="relative hidden md:block">
+            <Bell className="w-6 h-6 cursor-pointer text-primary-200 hover:text-primary-400" />
+            {unreadCount > 0 && (
+              <span className="absolute top-0 right-0 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
+                {unreadCount > 9 ? '9+' : unreadCount}
+              </span>
+            )}
+          </div>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent className="w-80 p-0">
+          <NotificationsList />
+        </DropdownMenuContent>
+      </DropdownMenu>
 
       <DropdownMenu>
         <DropdownMenuTrigger className="flex items-center gap-2 focus:outline-none cursor-pointer">
-          {/* Uncomment and fix Avatar if needed */}
           <Avatar>
             <AvatarImage src={accountProfile?.avatar}
 				className='transition-transform duration-300 hover:scale-110' />
             <AvatarFallback className="bg-primary-600">
-              {"NAMBAC"}
+              {(accountProfile?.fullName?.charAt(0) || "U").toUpperCase()}
             </AvatarFallback>
           </Avatar>
           <p className="text-primary-200 hidden md:block">{accountProfile?.fullName}</p>
-        </DropdownMenuTrigger>        <DropdownMenuContent className="bg-white text-primary-700 border rounded-md shadow-lg p-2">          <DropdownMenuItem
+        </DropdownMenuTrigger><DropdownMenuContent className="bg-white text-primary-700 border rounded-md shadow-lg p-2">          <DropdownMenuItem
             className="cursor-pointer hover:!bg-primary-700 hover:!text-primary-100 font-bold"
             onClick={() => router.push('/dashboard')}
           >

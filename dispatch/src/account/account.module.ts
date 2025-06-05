@@ -1,4 +1,4 @@
-import {Module} from '@nestjs/common';
+import {Module, forwardRef} from '@nestjs/common';
 import { AccountController } from './account.controller';
 import { AccountService } from './account.service';
 import { JwtModule } from '@nestjs/jwt';
@@ -9,11 +9,15 @@ import { AccountProfile, AccountProfileSchema } from './accountProfile.chema';
 import { CachedAuth0Guard } from './guards/cached-auth0.guard';
 import { Follow, FollowSchema } from './follow.schema';
 import { Post, PostSchema } from '../blog/post/post.chema';
+import { Notification, NotificationSchema } from './notification.schema';
+import { NotificationService } from './notification.service';
+import { NotificationController } from './notification.controller';
+import { MailerModule } from '../mailer/mailer.module';
 
 //account ~ profile ~ user
-@Module({
-    imports:[
-        PassportModule,		MongooseModule.forFeature([
+@Module({    imports:[
+        PassportModule,
+        MongooseModule.forFeature([
             {
                 name: AccountProfile.name,
                 schema: AccountProfileSchema
@@ -25,15 +29,19 @@ import { Post, PostSchema } from '../blog/post/post.chema';
             {
                 name: Post.name,
                 schema: PostSchema
+            },
+            {
+                name: Notification.name,
+                schema: NotificationSchema
             }
-        ]),
-		JwtModule.register({})
-    ],    providers:[
-        AccountService, Auth0Strategy, CachedAuth0Guard
+        ]),        JwtModule.register({}),
+        // Import MailerModule to make MailerService available in this module
+        forwardRef(() => MailerModule)
+    ],providers:[
+        AccountService, Auth0Strategy, CachedAuth0Guard, NotificationService
     ]
-    ,
-    controllers: [AccountController],
-    exports: [AccountService, CachedAuth0Guard]
+    ,    controllers: [AccountController, NotificationController],
+    exports: [AccountService, CachedAuth0Guard, NotificationService]
 })
 
 export class AccountModule {};

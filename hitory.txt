@@ -51,6 +51,7 @@ HTMLMinifier
 
 taskkill /F /IM node.exe
 
+nestjs e2e test
 
 =======================
 

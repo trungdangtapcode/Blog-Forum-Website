@@ -8,12 +8,14 @@ import { Request } from 'express';
 import { use } from 'passport';
 import { AccountService } from '@/account/account.service';
 import { AccountProfile } from '@/account/accountProfile.chema';
+import { NotificationService } from '@/account/notification.service';
 
 @Controller('post')
 export class PostController {
   constructor(
     private readonly postService: PostService,
-    private readonly accountService: AccountService
+    private readonly accountService: AccountService,
+    private readonly notificationService: NotificationService
   ) {}
   @Post('create')
   @UseGuards(CachedAuth0Guard)
@@ -23,7 +25,17 @@ export class PostController {
     const email = req.user.email;
     const profile: AccountProfile = await this.accountService.getProfile(email);
     const userId = profile._id as string;
-    return this.postService.create({...createPostDto, author: userId});
+    
+    // Create the post
+    const newPost = await this.postService.create({...createPostDto, author: userId});
+      // Notify followers about the new post
+    await this.notificationService.notifyFollowersOfNewPost(
+      userId, 
+      newPost._id.toString(), 
+      createPostDto.title
+    );
+    
+    return newPost;
   }
 
   @Get('get')

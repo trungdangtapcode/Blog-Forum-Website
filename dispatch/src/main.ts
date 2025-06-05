@@ -5,12 +5,18 @@ import { json, urlencoded } from 'express';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  // Allow all CORS (bypass)
+  // Allow all origins (with credentials support)
   app.enableCors({
-    origin: '*',
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-    credentials: true, // include cookies if needed
+    origin: (origin, callback) => {
+      callback(null, true); // Allow all origins
+    },
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    credentials: true,
+    allowedHeaders: 'Content-Type, Accept, Authorization, Expires, *, Cache-Control, Pragma, X-Requested-With',
   });
+  // If you're not using credentials, you can just use:
+  // app.enableCors({ origin: '*' });
+  // - chatgpt
 
   app.use(json({ limit: '50mb' }));
   app.use(urlencoded({ extended: true, limit: '50mb' }));
