@@ -31,6 +31,9 @@ export class PostService {
   }
 
   async update(id: string, updatePostDto: UpdatePostDto): Promise<Post | null> {
+    // Ensure updatedAt is updated when a post is edited
+    updatePostDto.updatedAt = new Date();
+
     return this.postModel
       .findByIdAndUpdate(id, updatePostDto, { new: true })
       .exec();

@@ -8,7 +8,6 @@ import { UpdateProfileDto } from './dto/UpdateProfile.dto';
 export class AccountController {
 	constructor(private AccountService: AccountService) {}
 	
-
 	@Get("/test")
 	@UseGuards(AuthGuard('auth0'))
 	test(){

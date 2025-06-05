@@ -74,6 +74,12 @@ export class CommentService {
         { $push: { comments: savedComment._id } }
       );
 
+      // Update the post's updatedAt field when a comment is added
+      await this.postModel.findByIdAndUpdate(
+        createCommentDto.post,
+        { $set: { updatedAt: new Date() } }
+      );
+
       // Send notification to the post's author
       await this.notificationService.createNotification({
         recipient: post.author.toString(),

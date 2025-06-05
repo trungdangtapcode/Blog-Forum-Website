@@ -28,6 +28,7 @@ const PostGrid: FC<PostGridProps> = ({ initialPosts = [] }) => {  const [posts, 
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [activeCategory, setActiveCategory] = useState<string>("all");
   const [showVerifiedOnly, setShowVerifiedOnly] = useState<boolean>(false);
+  const [sortOption, setSortOption] = useState<string>("lastUpdate"); // Added state for sort option
   const initialPostCount = 12;
 
   useEffect(() => {
@@ -65,10 +66,27 @@ const PostGrid: FC<PostGridProps> = ({ initialPosts = [] }) => {  const [posts, 
     return matchesSearch && matchesCategory && matchesVerification;
   });
 
+  // Sort posts based on the selected sort option
+  const sortedPosts = [...filteredPosts].sort((a, b) => {
+    switch (sortOption) {
+      case "lastUpdate":
+        return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
+      case "createDate":
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      case "likes":
+        return b.likes - a.likes;
+      case "comments":
+        return b.comments.length - a.comments.length;
+      default:
+        return 0;
+    }
+  });
+
   return (
     <div className="container mx-auto py-8 px-4 sm:px-6">
       <div className="mb-8">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">            <div className="flex items-center gap-2">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+          <div className="flex items-center gap-2">
             <h2 className="text-3xl font-bold text-primary-800 dark:text-primary-100">
               Explore Posts
             </h2>
@@ -76,7 +94,7 @@ const PostGrid: FC<PostGridProps> = ({ initialPosts = [] }) => {  const [posts, 
               <PlusCircle size={16} /> New Post
             </Link>
           </div>
-          
+
           <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
             <div className="relative w-full sm:w-80">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
@@ -88,8 +106,9 @@ const PostGrid: FC<PostGridProps> = ({ initialPosts = [] }) => {  const [posts, 
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
-            
-            <div className="flex items-center space-x-2">              <Checkbox 
+
+            <div className="flex items-center space-x-2">
+              <Checkbox 
                 id="verified-filter" 
                 checked={showVerifiedOnly}
                 onCheckedChange={(checked: boolean | "indeterminate") => setShowVerifiedOnly(checked === true)}
@@ -103,6 +122,19 @@ const PostGrid: FC<PostGridProps> = ({ initialPosts = [] }) => {  const [posts, 
                   Verified
                 </span>
               </label>
+            </div>
+
+            <div className="relative">
+              <select
+                className="bg-white dark:bg-primary-800 border-gray-200 dark:border-primary-700 text-sm rounded-md py-1.5 px-3"
+                value={sortOption}
+                onChange={(e) => setSortOption(e.target.value)}
+              >
+                <option value="lastUpdate">Last Update</option>
+                <option value="createDate">Create Date</option>
+                <option value="likes">Likes</option>
+                <option value="comments">Comments</option>
+              </select>
             </div>
           </div>
         </div>
@@ -122,13 +154,13 @@ const PostGrid: FC<PostGridProps> = ({ initialPosts = [] }) => {  const [posts, 
           </TabsList>          
           {/* Use the CategoryTabContent for "all" tab */}
           <TabsContent value="all" className="mt-0">
-            <CategoryTabContent loading={loading} filteredPosts={filteredPosts} initialPostCount={initialPostCount} />
+            <CategoryTabContent loading={loading} filteredPosts={sortedPosts} initialPostCount={initialPostCount} />
           </TabsContent>
           
           {/* For other categories */}
           {categories.slice(1).map((category) => (
             <TabsContent key={category.id} value={category.id} className="mt-0">
-              <CategoryTabContent loading={loading} filteredPosts={filteredPosts} initialPostCount={initialPostCount} />
+              <CategoryTabContent loading={loading} filteredPosts={sortedPosts} initialPostCount={initialPostCount} />
             </TabsContent>
           ))}
         </Tabs>
