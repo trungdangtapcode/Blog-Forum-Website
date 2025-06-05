@@ -10,11 +10,12 @@ import * as redisStore from 'cache-manager-ioredis';
 import { TokenModule } from './utils/token.module';
 import { MailerModule } from './mailer/mailer.module';
 
-@Module({
-  imports: [    ConfigModule.forRoot({
+@Module({  
+  imports: [
+    ConfigModule.forRoot({
       isGlobal: true,
       expandVariables: true, //${}
-    }),
+    }),    
     CacheModule.register({
       isGlobal: true,
       // Use memory store in development and Redis in production
@@ -27,9 +28,11 @@ import { MailerModule } from './mailer/mailer.module';
             max: 500, // Maximum number of items in cache
           } 
         : {
-            ttl: 1800, // 30 minutes in seconds            max: 200, // Maximum number of items in cache
+            ttl: 1800, // 30 minutes in seconds
+            max: 200, // Maximum number of items in cache
           }),
-    }),    TokenModule,
+    }),
+    TokenModule,
     AccountModule,
     PostModule,
     MailerModule,

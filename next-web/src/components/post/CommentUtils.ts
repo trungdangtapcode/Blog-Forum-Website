@@ -1,5 +1,5 @@
 "use client";
-
+//NO MORE USE THIS CODE, USE "./comments/" INSTEAD
 import { CommentType } from "./types";
 
 /**

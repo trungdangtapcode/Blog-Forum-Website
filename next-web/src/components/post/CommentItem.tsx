@@ -1,5 +1,5 @@
 "use client";
-
+//NO MORE USE THIS CODE, USE "./comments/" INSTEAD
 import { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";

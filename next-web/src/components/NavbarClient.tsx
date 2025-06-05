@@ -114,6 +114,12 @@ const LogginedMenu = ({accountProfile}: {accountProfile?: AccountProfile}) => {
           >
             Saved Posts
           </DropdownMenuItem>
+          <DropdownMenuItem
+            className="cursor-pointer hover:!bg-primary-700 hover:!text-primary-100"
+            onClick={() => router.push('/profile/following-followers')}
+          >
+            Following & Followers
+          </DropdownMenuItem>
           <DropdownMenuSeparator className="bg-primary-200" />
           <DropdownMenuItem
             className="cursor-pointer hover:!bg-primary-700 hover:!text-primary-100"

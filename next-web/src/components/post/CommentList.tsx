@@ -1,5 +1,5 @@
 "use client";
-
+//NO MORE USE THIS CODE, USE "./comments/" INSTEAD
 import { CommentType, UserInfo } from "./types";
 import { CommentItem } from "./CommentItem";
 import { Skeleton } from "@/components/ui/skeleton";

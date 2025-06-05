@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ReplyForm } from "./ReplyForm";
 import { CommentType, UserInfo } from "./types";
+import Link from "next/link";
 
 interface CommentItemProps {
   comment: CommentType;
@@ -109,7 +110,10 @@ export const CommentItem: React.FC<CommentItemProps> = ({
         <div className="flex-1">
           <div className="flex items-center justify-between">
             <div>
-              <p className="font-medium text-sm">{comment.author?.fullName || 'Anonymous User'}</p>
+              <Link href={`/profile/${comment.author?._id}`} className="font-medium text-sm text-blue-500 hover:underline">
+                {comment.author?.fullName || 'Anonymous User'}
+              </Link>
+              
               <span className="text-xs text-gray-500 dark:text-gray-400">
                 {formatDistanceToNowSimple(new Date(comment.createdAt))}
                 {comment.updatedAt && comment.updatedAt !== comment.createdAt && 

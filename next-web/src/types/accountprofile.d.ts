@@ -6,6 +6,7 @@ interface AccountProfile {
 	age: number;
 	location: string;
 	occupation: string;
+	_id: string;
 }
 
 type AccountPublicProfile = Partial<AccountProfile>;

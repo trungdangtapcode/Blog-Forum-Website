@@ -3,6 +3,7 @@ import { AccountService } from './account.service';
 import { CachedAuth0Guard } from './guards/cached-auth0.guard';
 import { AuthGuard } from '@nestjs/passport';
 import { UpdateProfileDto } from './dto/UpdateProfile.dto';
+import { AccountProfile } from './accountProfile.chema';
 
 @Controller('account')
 export class AccountController {
@@ -101,12 +102,12 @@ export class AccountController {
 	}
 
 	@Get("/followers/:userId")
-	async getFollowers(@Param('userId') userId: string) {
+	async getFollowersId(@Param('userId') userId: string) {
 		return await this.AccountService.getFollowers(userId);
 	}
 
 	@Get("/following/:userId")
-	async getFollowing(@Param('userId') userId: string) {
+	async getFollowingId(@Param('userId') userId: string) {
 		return await this.AccountService.getFollowing(userId);
 	}
 
@@ -114,6 +115,26 @@ export class AccountController {
 	@UseGuards(CachedAuth0Guard)
 	async getDashboardStats(@Req() req: Request & { user: any }) {
 		const email = req.user.email;
+		const profile: AccountProfile = await this.AccountService.getProfile(email);
+		const userId = profile._id as string;
 		return await this.AccountService.getDashboardStats(email);
+	}
+
+	@Get("/following")
+	@UseGuards(CachedAuth0Guard)
+	async getFollowing(@Req() req: Request & { user: any }) {
+		const email = req.user.email;
+		const profile: AccountProfile = await this.AccountService.getProfile(email);
+		const userId = profile._id as string;
+		return this.AccountService.getFollowing(userId);
+	}
+
+	@Get("/followers")
+	@UseGuards(CachedAuth0Guard)
+	async getFollowers(@Req() req: Request & { user: any }) {
+		const email = req.user.email;
+		const profile: AccountProfile = await this.AccountService.getProfile(email);
+		const userId = profile._id as string;
+		return this.AccountService.getFollowers(userId);
 	}
 }
