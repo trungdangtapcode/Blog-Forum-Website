@@ -3,7 +3,7 @@
 import { NAVBAR_HEIGHT } from '@/lib/constants'
 import Link from 'next/link'
 import Image from 'next/image'
-import React from 'react'
+import React, { useEffect } from 'react'
 import { Button } from './ui/button'
 
 
@@ -16,7 +16,9 @@ import {
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
 import { NotificationsList } from "./ui/NotificationsList";
+import { MessagesList } from "./ui/MessagesList";
 import { getUnreadNotificationsCount } from "@/utils/notificationsApi";
+import { getUnreadMessagesCount } from "@/utils/messagesApi";
 
 // import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 // import { SidebarTrigger } from "./ui/sidebar";
@@ -25,9 +27,14 @@ import { getUnreadNotificationsCount } from "@/utils/notificationsApi";
 
 import { usePathname, useRouter } from 'next/navigation';
 // import { SidebarTrigger } from './ui/sidebar'
-import { AccountProfile } from '../../../dispatch/src/account/accountProfile.chema';
+
+// Con cac Copilot
+// import { AccountProfile } from '../../../dispatch/src/account/accountProfile.chema';
+
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar'
 import { AppRouterInstance } from 'next/dist/shared/lib/app-router-context.shared-runtime'
+import { useDispatch } from 'react-redux'
+import { setProfile } from '@/store/accountSlice'
 
 
 const LogoutHandler = (router: AppRouterInstance) => {
@@ -40,43 +47,71 @@ const LogoutHandler = (router: AppRouterInstance) => {
 
 
 const LogginedMenu = ({accountProfile}: {accountProfile?: AccountProfile}) => {
-  const router = useRouter();
-  const [unreadCount, setUnreadCount] = React.useState(0);
+  const dispatch = useDispatch();
+  useEffect(() => {
+    if (accountProfile) {
+      dispatch(setProfile(accountProfile));
+    }
+  }, [accountProfile, dispatch]);
 
-  // Fetch unread notifications count on load and periodically
+  const router = useRouter();
+  const [unreadNotificationCount, setUnreadNotificationCount] = React.useState(0);
+  const [unreadMessageCount, setUnreadMessageCount] = React.useState(0);
+
+  // Fetch unread counts on load and periodically
   React.useEffect(() => {
-    const fetchUnreadCount = async () => {
+    const fetchUnreadCounts = async () => {
       try {
-        const count = await getUnreadNotificationsCount();
-        setUnreadCount(count);
+        const notificationCount = await getUnreadNotificationsCount();
+        setUnreadNotificationCount(notificationCount);
+        
+        const messageCount = await getUnreadMessagesCount();
+        setUnreadMessageCount(messageCount);
       } catch (error) {
-        console.error('Failed to fetch unread notifications count:', error);
+        console.error('Failed to fetch unread counts:', error);
       }
     };
 
     // Fetch immediately
-    fetchUnreadCount();
+    fetchUnreadCounts();
 
     // Set up periodic polling every 30 seconds
-    const intervalId = setInterval(fetchUnreadCount, 30000);
+    const intervalId = setInterval(fetchUnreadCounts, 30000);
 
     return () => clearInterval(intervalId);
   }, []);
-
   return (
-    <>
-      <div className="relative hidden md:block">
-        <MessageCircle className="w-6 h-6 cursor-pointer text-primary-200 hover:text-primary-400" />
-        <span className="absolute top-0 right-0 w-2 h-2 bg-secondary-700 rounded-full"></span>
-      </div>
+    <>      <DropdownMenu>
+        <DropdownMenuTrigger className="focus:outline-none">
+          <div className="relative hidden md:block">
+            <MessageCircle className="w-6 h-6 cursor-pointer text-primary-200 hover:text-primary-400" />
+            {unreadMessageCount > 0 && (
+              <span className="absolute top-0 right-0 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
+                {unreadMessageCount > 9 ? '9+' : unreadMessageCount}
+              </span>
+            )}
+          </div>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent className="w-80 p-0">
+          <div>
+            <MessagesList />
+            <DropdownMenuItem
+              className="cursor-pointer hover:!bg-primary-700 hover:!text-primary-100 border-t border-gray-200 py-2 text-center"
+              onClick={() => router.push('/messages')}
+            >
+              View all messages
+            </DropdownMenuItem>
+          </div>
+        </DropdownMenuContent>
+      </DropdownMenu>
       
       <DropdownMenu>
         <DropdownMenuTrigger className="focus:outline-none">
           <div className="relative hidden md:block">
             <Bell className="w-6 h-6 cursor-pointer text-primary-200 hover:text-primary-400" />
-            {unreadCount > 0 && (
+            {unreadNotificationCount > 0 && (
               <span className="absolute top-0 right-0 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
-                {unreadCount > 9 ? '9+' : unreadCount}
+                {unreadNotificationCount > 9 ? '9+' : unreadNotificationCount}
               </span>
             )}
           </div>

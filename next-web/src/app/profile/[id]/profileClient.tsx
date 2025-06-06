@@ -6,7 +6,7 @@ import { getPostsByAuthor, Post, followUser, unfollowUser, getFollowCounts, isFo
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, MapPin, Briefcase, Calendar, UserPlus, UserMinus } from "lucide-react";
+import { ArrowLeft, MapPin, Briefcase, Calendar, UserPlus, UserMinus, MessageCircle } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -14,6 +14,8 @@ import { format } from "date-fns";
 import Link from "next/link";
 import toast, { Toaster } from 'react-hot-toast';
 import { auth0Client } from "@/lib/auth0-client";
+import { sendMessage } from "@/utils/messagesApi";
+import { useRouter } from "next/navigation";
 
 interface AccountPublicProfile {
   _id: string;
@@ -45,8 +47,11 @@ const ProfilePageClient = ({ params }: ProfilePageClientProps) => {
   const [loading, setLoading] = useState(true);
   const [followCounts, setFollowCounts] = useState({ followersCount: 0, followingCount: 0 });
   const [isUserFollowing, setIsUserFollowing] = useState(false);
-  const [isFollowLoading, setIsFollowLoading] = useState(false);  const [user, setUser] = useState<User | null>(null);
+  const [isFollowLoading, setIsFollowLoading] = useState(false);  
+  const [user, setUser] = useState<User | null>(null);
   const [userLoading, setUserLoading] = useState(true);
+  const [isMessageLoading, setIsMessageLoading] = useState(false);
+  const router = useRouter();
 
   // Fetch user session
   useEffect(() => {
@@ -103,7 +108,6 @@ const ProfilePageClient = ({ params }: ProfilePageClientProps) => {
 
     fetchProfileAndPosts();
   }, [params, user, userLoading]);
-
   const handleFollowToggle = async () => {
     if (!user || !profile) {
       toast.error("Please log in to follow users");
@@ -128,6 +132,37 @@ const ProfilePageClient = ({ params }: ProfilePageClientProps) => {
       toast.error("Failed to update follow status");
     } finally {
       setIsFollowLoading(false);
+    }
+  };
+  // Function to start a new conversation with the profile owner
+  const handleStartConversation = async () => {
+    if (!user || !profile) {
+      toast.error("Please log in to send messages");
+      return;
+    }
+
+    setIsMessageLoading(true);
+    try {
+      // Check if the profile ID is valid
+      if (!profile._id) {
+        throw new Error("Invalid profile ID");
+      }
+      
+      console.log("Starting conversation with user:", profile._id);
+      
+      // Send an initial message to create the conversation
+      await sendMessage(profile._id, "Hi there!");
+      toast.success("Conversation started successfully");
+      
+      // Navigate to the messages view with the userId parameter to open this specific conversation
+      router.push(`/messages?userId=${profile._id}`);
+    } catch (error) {
+      console.error("Error starting conversation:", error);
+      // Provide a more specific error message if available
+      const errorMessage = error instanceof Error ? error.message : "Failed to start conversation. Please try again later.";
+      toast.error(errorMessage);
+    } finally {
+      setIsMessageLoading(false);
     }
   };
 
@@ -237,29 +272,40 @@ const ProfilePageClient = ({ params }: ProfilePageClientProps) => {
                 )}
               </div>
             </div>
-            
-            {/* Follow button - only show if user is logged in and viewing someone else's profile */}
+              {/* Profile action buttons - only show if user is logged in and viewing someone else's profile */}
             {user && !userLoading && user.sub !== profile._id && (
-              <Button
-                onClick={handleFollowToggle}
-                disabled={isFollowLoading}
-                variant={isUserFollowing ? "outline" : "default"}
-                className="min-w-24"
-              >
-                {isFollowLoading ? (
-                  "Loading..."
-                ) : isUserFollowing ? (
-                  <>
-                    <UserMinus className="h-4 w-4 mr-2" />
-                    Unfollow
-                  </>
-                ) : (
-                  <>
-                    <UserPlus className="h-4 w-4 mr-2" />
-                    Follow
-                  </>
-                )}
-              </Button>
+              <div className="flex space-x-2">
+                <Button
+                  onClick={handleFollowToggle}
+                  disabled={isFollowLoading}
+                  variant={isUserFollowing ? "outline" : "default"}
+                  className="min-w-24"
+                >
+                  {isFollowLoading ? (
+                    "Loading..."
+                  ) : isUserFollowing ? (
+                    <>
+                      <UserMinus className="h-4 w-4 mr-2" />
+                      Unfollow
+                    </>
+                  ) : (
+                    <>
+                      <UserPlus className="h-4 w-4 mr-2" />
+                      Follow
+                    </>
+                  )}
+                </Button>
+                
+                <Button
+                  onClick={handleStartConversation}
+                  disabled={isMessageLoading}
+                  variant="outline"
+                  className="min-w-24"
+                >
+                  <MessageCircle className="h-4 w-4 mr-2" />
+                  Message
+                </Button>
+              </div>
             )}
           </div>
           

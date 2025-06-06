@@ -126,11 +126,20 @@ export class CachedAuth0Guard implements CanActivate, OnModuleInit {
       } else {
         this.cacheMisses++;
         this.logger.debug(`❌ CACHE MISS for key: ${cacheKey}`);
-      }
-
-      // If cache miss, validate with Auth0
+      }      // If cache miss, validate with Auth0
       this.logger.debug('Validating token with Auth0');
       const user = await this.authService.validateAccessToken(token);
+      
+      // Ensure we have a userId property for compatibility
+      if (user && user.sub && !user.userId) {
+        user.userId = user.sub; // Use the Auth0 subject ID as userId
+        this.logger.debug(`Set userId from Auth0 sub: ${user.sub}`);
+      }
+      
+      if (!user || (!user.userId && !user.sub)) {
+        this.logger.error('No user ID found in Auth0 response', user);
+        throw new UnauthorizedException('Invalid or incomplete user data');
+      }
       
       // Store in both caches for redundancy
       try {
