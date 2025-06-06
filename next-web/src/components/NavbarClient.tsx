@@ -152,7 +152,6 @@ const LogginedMenu = ({accountProfile}: {accountProfile?: AccountProfile}) => {
             className="cursor-pointer hover:!bg-primary-700 hover:!text-primary-100"
             onClick={() => router.push('/search')}
           >
-            <Search className="h-4 w-4 mr-2" />
             Advanced Search
           </DropdownMenuItem>
           <DropdownMenuItem

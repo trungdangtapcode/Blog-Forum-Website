@@ -3,6 +3,7 @@ import { Message } from '@/utils/messagesApi';
 import { formatDistanceToNow } from 'date-fns';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
+import Link from 'next/link';
 
 interface MessageItemProps {
   message: Message;
@@ -12,6 +13,7 @@ interface MessageItemProps {
 }
 
 export function MessageItem({ message, isCurrentUser, avatar, name }: MessageItemProps) {
+  console.log("message:", message.sender);
   return (
     <div
       className={cn(
@@ -20,12 +22,14 @@ export function MessageItem({ message, isCurrentUser, avatar, name }: MessageIte
       )}
     >
       {!isCurrentUser && (
+        <Link href={`/profile/${message.sender}`}>
         <Avatar className="h-8 w-8 mr-2">
           <AvatarImage src={avatar} />
           <AvatarFallback>
             {name?.charAt(0).toUpperCase() || 'U'}
           </AvatarFallback>
         </Avatar>
+        </Link>
       )}
       
       <div
