@@ -6,9 +6,17 @@ import {motion} from 'framer-motion'
 import { TypeAnimation } from 'react-type-animation';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { useRouter } from 'next/navigation';
 
 const HeroSection = () => {
 	const [searchbarValue, setSearchbarValue] = useState("");
+	const router = useRouter();
+	
+	const handleSearch = () => {
+		if (searchbarValue.trim()) {
+			router.push(`/search?q=${encodeURIComponent(searchbarValue)}`);
+		}
+	};
   	return (
 	<div className="relative h-screen bg-primary-300">
 		<Image 
@@ -64,11 +72,11 @@ const HeroSection = () => {
 							value = {searchbarValue}
 							placeholder = "What are you curious about?"
 							onChange={(e) => setSearchbarValue(e.target.value)}
-						/>
-						<Button 
+						/>						<Button 
 							className='h-12 rounded-none rounded-r-xl
 								bg-secondary-600 hover:bg-white
-								hover:text-primary-700 font-bold cursor-pointer'>
+								hover:text-primary-700 font-bold cursor-pointer'
+							onClick={handleSearch}>
 							Search
 						</Button>
 					</div>

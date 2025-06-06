@@ -7,7 +7,7 @@ import React, { useEffect } from 'react'
 import { Button } from './ui/button'
 
 
-import { Bell, MessageCircle, Search } from "lucide-react";
+import { Bell, MessageCircle, Home, Search } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -142,12 +142,18 @@ const LogginedMenu = ({accountProfile}: {accountProfile?: AccountProfile}) => {
             onClick={() => router.push(`/profile/${accountProfile?._id}`)}
           >
             My Profile
-          </DropdownMenuItem>
-          <DropdownMenuItem
+          </DropdownMenuItem>          <DropdownMenuItem
             className="cursor-pointer hover:!bg-primary-700 hover:!text-primary-100"
             onClick={() => router.push('/posts/saved')}
           >
             Saved Posts
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            className="cursor-pointer hover:!bg-primary-700 hover:!text-primary-100"
+            onClick={() => router.push('/search')}
+          >
+            <Search className="h-4 w-4 mr-2" />
+            Advanced Search
           </DropdownMenuItem>
           <DropdownMenuItem
             className="cursor-pointer hover:!bg-primary-700 hover:!text-primary-100"
@@ -233,7 +239,7 @@ const NavbarClient = ({
 				>
 				{(
 					<>
-					<Search className="h-4 w-4" />
+					<Home className="h-4 w-4" />
 					<span className="hidden md:block ml-2 w-full">
 						GO TO MAIN PAGE
 					</span>

@@ -10,6 +10,7 @@ import * as redisStore from 'cache-manager-ioredis';
 import { TokenModule } from './utils/token.module';
 import { MailerModule } from './mailer/mailer.module';
 import { MessageModule } from './message/message.module';
+import { SearchModule } from './search/search.module';
 
 @Module({  
   imports: [
@@ -37,6 +38,7 @@ import { MessageModule } from './message/message.module';
     PostModule,
     MailerModule,
     MessageModule,
+    SearchModule,
     MongooseModule.forRoot(process.env.MONGO_URI),
   ],
   controllers: [AppController],

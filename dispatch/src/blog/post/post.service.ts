@@ -5,22 +5,31 @@ import { Post } from './post.chema';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { Like } from './like.schema';
+import { SearchService } from '@/search/search.service';
 import e from 'express';
 
 @Injectable()
-export class PostService {
-  constructor(
+export class PostService {  constructor(
     @InjectModel(Post.name) private readonly postModel: Model<Post>,
     @InjectModel(Like.name) private likeModel: Model<Like>,
+    private readonly searchService: SearchService,
   ) {}
-
   async create(createPostDto: CreatePostDto): Promise<Post> {
     const newPost = new this.postModel({
       ...createPostDto,
       createdAt: new Date(),
       updatedAt: new Date(),
     });
-    return newPost.save();
+    const savedPost = await newPost.save();
+    
+    // Refresh search index to include the new post
+    try {
+      await this.searchService.refreshIndex();
+    } catch (error) {
+      console.error('Failed to refresh search index:', error);
+    }
+    
+    return savedPost;
   }
   async findAll(): Promise<Post[]> {
     return this.postModel.find().populate('author', 'name email avatar fullName').exec();

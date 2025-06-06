@@ -4,7 +4,7 @@ import { FC, useEffect, useState } from "react";
 import { Post, getPosts } from "@/utils/postFetching";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
-import { Search, PlusCircle } from "lucide-react";
+import { Search, PlusCircle, Filter } from "lucide-react";
 import Link from "next/link";
 import CategoryTabContent from "./CategoryTabContent";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -93,18 +93,24 @@ const PostGrid: FC<PostGridProps> = ({ initialPosts = [] }) => {  const [posts, 
             <Link href="/posts/create" className="hidden sm:flex ml-4 items-center gap-1.5 text-sm bg-secondary-500 hover:bg-secondary-600 text-white font-medium py-1.5 px-3 rounded-md transition-colors">
               <PlusCircle size={16} /> New Post
             </Link>
-          </div>
-
+          </div>          
           <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
-            <div className="relative w-full sm:w-80">
+            <div className="relative w-full sm:w-80 flex">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
               <Input
                 type="text"
                 placeholder="Search posts..."
-                className="pl-10 bg-white dark:bg-primary-800 border-gray-200 dark:border-primary-700"
+                className="pl-10 bg-white dark:bg-primary-800 border-gray-200 dark:border-primary-700 rounded-r-none"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
+              <Link 
+                href="/search" 
+                className="flex items-center justify-center px-3 bg-primary-600 hover:bg-primary-700 text-white rounded-r-md border-y border-r border-primary-600 hover:border-primary-700 transition-colors"
+                title="Advanced Search"
+              >
+                <Filter size={16} />
+              </Link>
             </div>
 
             <div className="flex items-center space-x-2">
