@@ -143,4 +143,38 @@ export class MailerService {
     
     return this.sendEmailToAccount(accountId, subject, content);
   }
+  
+  async sendGenericNotification(accountId: string, notificationType: string, message: string): Promise<boolean> {
+    const account = await this.getAccountById(accountId);
+    
+    if (!account) {
+      return false;
+    }
+    
+    // Format the notification type for display (e.g., "new-comment" becomes "New Comment")
+    const formattedType = notificationType
+      .split('-')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+    
+    const subject = `${formattedType} Notification - Blog Forum`;
+    const content = `
+      <div>
+        <h1>${formattedType} Notification</h1>
+        <p>Hello ${account.fullName || 'User'},</p>
+        <p>${message}</p>
+        <p>
+          <a 
+            href="http://localhost:3000/notifications" 
+            style="padding: 10px 15px; background-color: #2196F3; color: white; text-decoration: none; border-radius: 4px;"
+          >
+            View Notifications
+          </a>
+        </p>
+        <p>Best regards,<br>The Blog Forum Team</p>
+      </div>
+    `;
+    
+    return this.sendEmailToAccount(accountId, subject, content);
+  }
 }

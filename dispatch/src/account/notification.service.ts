@@ -30,15 +30,19 @@ export class NotificationService {  constructor(
       senderId: dto.senderId,
       read: false,
       createdAt: new Date(),
-    });
-
-    // Save notification to database
+    });    // Save notification to database
     await notification.save();
 
-    // Send email notification if requested
-    if (dto.sendEmail && dto.postId && dto.type === 'new-post') {
+    // Send email notification for all notification types if requested
+    if (dto.sendEmail) {
       try {
-        await this.mailerService.sendPostNotification(dto.recipient, dto.message, dto.postId);
+        if (dto.type === 'new-post' && dto.postId) {
+          // For post-specific notifications, use the specialized method
+          await this.mailerService.sendPostNotification(dto.recipient, dto.message, dto.postId);
+        } else {
+          // For any other notification type, send a generic notification email
+          await this.mailerService.sendGenericNotification(dto.recipient, dto.type, dto.message);
+        }
       } catch (error) {
         console.error('Failed to send email notification:', error);
       }

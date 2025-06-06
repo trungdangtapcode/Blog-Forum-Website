@@ -46,15 +46,14 @@ export class CommentService {
       await this.commentModel.findByIdAndUpdate(
         createCommentDto.parentComment,
         { $push: { replies: savedComment._id } }
-      );
-
-      // Send notification to the parent comment's author
+      );      // Send notification to the parent comment's author
       await this.notificationService.createNotification({
         recipient: parentComment.author.toString(),
         type: 'reply',
         message: `You have a new reply to your comment: ${createCommentDto.content}`,
         commentId: savedComment._id.toString(),
         senderId: userId,
+        sendEmail: true,
       });
 
       // Return the saved comment with author information
@@ -78,9 +77,7 @@ export class CommentService {
       await this.postModel.findByIdAndUpdate(
         createCommentDto.post,
         { $set: { updatedAt: new Date() } }
-      );
-
-      // Send notification to the post's author
+      );      // Send notification to the post's author
       await this.notificationService.createNotification({
         recipient: post.author.toString(),
         type: 'comment',
@@ -88,6 +85,7 @@ export class CommentService {
         postId: createCommentDto.post,
         commentId: savedComment._id.toString(),
         senderId: userId,
+        sendEmail: true,
       });
 
       // Return the saved comment with author information
