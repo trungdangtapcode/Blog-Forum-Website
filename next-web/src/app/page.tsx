@@ -7,6 +7,9 @@ import { ChevronRight, MessageSquare } from "lucide-react";
 import Image from "next/image";
 import { auth0 } from "@/lib/auth0";
 
+// Force dynamic rendering for this page
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Blog Forum | Home",
   description: "A community-driven blog forum for sharing ideas, stories, and discussions",

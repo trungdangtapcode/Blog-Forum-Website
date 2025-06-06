@@ -1,3 +1,5 @@
+'use client'; // 👈 REQUIRED when using useSearchParams
+
 import React, { useState, useEffect, useRef } from 'react';
 import {
   fetchConversations,

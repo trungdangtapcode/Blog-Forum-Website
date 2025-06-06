@@ -7,7 +7,7 @@ import React, { useEffect } from 'react'
 import { Button } from './ui/button'
 
 
-import { Bell, MessageCircle, Home, Search } from "lucide-react";
+import { Bell, MessageCircle, Home } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,

@@ -8,6 +8,9 @@ import DashboardClient from "./dashboard-client";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 
+// This tells Next.js to always render this route dynamically
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Dashboard | Blog Forum",
   description: "View your account dashboard and analytics",

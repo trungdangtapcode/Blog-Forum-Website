@@ -1,0 +1,545 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import Link from 'next/link';
+import { 
+  ArrowLeft, 
+  Search, 
+  Filter, 
+  SortDesc, 
+  CheckCircle2, 
+  ThumbsUp,
+  ArrowUpDown
+} from 'lucide-react';
+import { motion } from 'framer-motion';
+import { 
+  Card, 
+  CardContent, 
+  CardFooter, 
+  CardHeader, 
+  CardTitle 
+} from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Checkbox } from '@/components/ui/checkbox';
+import { formatDistanceToNowSimple } from '@/utils/distanceToNow';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Toaster, toast } from 'react-hot-toast';
+
+interface SearchResult {
+  _id: string;
+  title: string;
+  content: string;
+  summary?: string;
+  author: {
+    _id: string;
+    name: string;
+    email: string;
+    avatar?: string;
+  };
+  category: string;
+  isVerified: boolean;
+  tags?: string[];
+  likes: number;
+  createdAt: string;
+  updatedAt: string;
+  comments?: { _id: string }[];
+}
+
+export default function SearchPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [searchQuery, setSearchQuery] = useState('');
+  const [category, setCategory] = useState<string>("all");
+  const [isVerified, setIsVerified] = useState<boolean | null>(null);
+  const [authorName, setAuthorName] = useState('');
+  const [tagInput, setTagInput] = useState('');
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [results, setResults] = useState<SearchResult[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [showAdvanced, setShowAdvanced] = useState(false);
+  const [sortBy, setSortBy] = useState('relevance');
+  const [submitted, setSubmitted] = useState(false);
+    // Process URL search parameters when the component mounts
+  useEffect(() => {
+    const queryParam = searchParams.get('q');
+    if (queryParam) {
+      setSearchQuery(queryParam);
+      // We'll trigger the search in a separate effect
+    }
+  }, [searchParams]);
+  
+  // Perform search when the query changes from URL parameters
+  useEffect(() => {
+    const queryParam = searchParams.get('q');
+    if (queryParam && queryParam === searchQuery) {
+      const performSearch = async () => {
+        setLoading(true);
+        setSubmitted(true);
+        
+        try {
+          const response = await fetch('/api/search', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              q: searchQuery,
+              limit: 30,
+              category: category === "all" ? undefined : category,
+              isVerified: isVerified !== null ? isVerified : undefined,
+              author: authorName || undefined
+            }),
+          });
+
+          if (!response.ok) {
+            throw new Error('Search request failed');
+          }
+
+          const data = await response.json();
+          
+          // Sort the results based on the selected option
+          const sortedResults = [...data.results];
+          
+          switch (sortBy) {
+            case 'newest':
+              sortedResults.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+              break;
+            case 'oldest':
+              sortedResults.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+              break;
+            case 'mostLiked':
+              sortedResults.sort((a, b) => (b.likes || 0) - (a.likes || 0));
+              break;
+            case 'mostComments':
+              sortedResults.sort((a, b) => (b.comments?.length || 0) - (a.comments?.length || 0));
+              break;
+            case 'relevance':
+            default:
+              // The backend already sorts by relevance
+              break;
+          }
+          
+          setResults(sortedResults);
+
+        } catch (error) {
+          console.error('Search error:', error);
+          toast.error('Failed to perform search. Please try again.');
+        } finally {
+          setLoading(false);
+        }
+      };
+      
+      performSearch();
+    }
+  }, [searchQuery, category, isVerified, authorName, sortBy, searchParams]);
+
+  const categories = [
+    { id: "technology", name: "Technology" },
+    { id: "lifestyle", name: "Lifestyle" },
+    { id: "science", name: "Science" },
+    { id: "health", name: "Health" },
+    { id: "business", name: "Business" },
+  ];
+  // Function to handle search submission
+  const handleSearch = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    
+    if (!searchQuery.trim()) {
+      toast.error('Please enter a search term');
+      return;
+    }
+
+    setLoading(true);
+    setSubmitted(true);
+    
+    try {
+      // Update URL with search query parameter for better sharing and browser history
+      const currentUrl = new URL(window.location.href);
+      currentUrl.searchParams.set('q', searchQuery);
+      
+      // Update the browser URL without reloading the page
+      window.history.pushState({}, '', currentUrl.toString());
+      
+      const response = await fetch('/api/search', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          q: searchQuery,
+          limit: 30,
+          category: category === "all" ? undefined : category,
+          isVerified: isVerified !== null ? isVerified : undefined,
+          author: authorName || undefined
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Search request failed');
+      }
+
+      const data = await response.json();
+        // Sort the results based on the selected option
+      const sortedResults = [...data.results];
+      
+      switch (sortBy) {
+        case 'newest':
+          sortedResults.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+          break;
+        case 'oldest':
+          sortedResults.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+          break;
+        case 'mostLiked':
+          sortedResults.sort((a, b) => (b.likes || 0) - (a.likes || 0));
+          break;
+        case 'mostComments':
+          sortedResults.sort((a, b) => (b.comments?.length || 0) - (a.comments?.length || 0));
+          break;
+        case 'relevance':
+        default:
+          // The backend already sorts by relevance
+          break;
+      }
+      
+      setResults(sortedResults);
+
+    } catch (error) {
+      console.error('Search error:', error);
+      toast.error('Failed to perform search. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+  // Function to handle adding tags
+  const handleAddTag = () => {
+    if (tagInput && !selectedTags.includes(tagInput)) {
+      setSelectedTags([...selectedTags, tagInput]);
+      setTagInput('');
+    }
+  };
+
+  // Function to handle removing tags
+  const handleRemoveTag = (tag: string) => {
+    setSelectedTags(selectedTags.filter((t) => t !== tag));
+  };
+
+  // Function to clear all filters
+  const clearFilters = () => {
+    setCategory("all");
+    setIsVerified(null);
+    setAuthorName('');
+    setSelectedTags([]);
+    setSortBy('relevance');
+  };
+
+  // Get category badge color
+  const getCategoryColor = (category: string) => {
+    switch (category?.toLowerCase()) {
+      case 'technology':
+        return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300';
+      case 'lifestyle':
+        return 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300';
+      case 'science':
+        return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
+      case 'health':
+        return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300';
+      case 'business':
+        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300';
+      default:
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
+    }
+  };
+
+  const truncateText = (text: string, maxLength: number) => {
+    if (!text) return '';
+    return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
+  };
+
+  return (
+    <main className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      {/* Header */}
+      <div className="pt-16 pb-8 text-center bg-gradient-to-r from-primary-700 to-secondary-700 text-white">
+        <h1 className="text-4xl md:text-5xl font-bold mb-4">Advanced Search</h1>
+        <p className="text-xl max-w-2xl mx-auto px-4">
+          Find exactly what you are looking for with our powerful search tools
+        </p>
+      </div>
+
+      <div className="container mx-auto py-8 px-4">
+        <Link href="/posts" className="inline-flex items-center text-primary-600 hover:text-primary-800 mb-6">
+          <ArrowLeft className="mr-2 h-4 w-4" /> Back to Posts
+        </Link>
+
+        {/* Search Form */}
+        <form onSubmit={handleSearch} className="mb-10">
+          <div className="flex flex-col space-y-4">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+              <Input
+                type="text"
+                placeholder="Search for posts, topics, or content..."
+                className="pl-12 py-6 text-lg bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-4">
+              <Button 
+                type="submit" 
+                className="grow bg-primary-600 hover:bg-primary-700 text-white py-6 text-lg"
+                disabled={loading}
+              >
+                {loading ? (
+                  <span className="flex items-center">
+                    <motion.div
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                      className="mr-2"
+                    >
+                      <ArrowUpDown className="h-5 w-5" />
+                    </motion.div>
+                    Searching...
+                  </span>
+                ) : (
+                  <span className="flex items-center">
+                    <Search className="mr-2 h-5 w-5" /> Search
+                  </span>
+                )}
+              </Button>
+
+              <Button 
+                type="button" 
+                variant="outline" 
+                className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700"
+                onClick={() => setShowAdvanced(!showAdvanced)}
+              >
+                <Filter className="mr-2 h-5 w-5" />
+                {showAdvanced ? 'Hide Filters' : 'Advanced Search'}
+              </Button>
+            </div>
+
+            {showAdvanced && (
+              <motion.div 
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.3 }}
+                className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 mt-4"
+              >
+                <h3 className="text-lg font-medium mb-4">Advanced Search Options</h3>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Category</label>
+                    <Select value={category} onValueChange={(value) => setCategory(value)}>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Any category" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Any category</SelectItem>
+                        {categories.map((cat) => (
+                          <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Author</label>
+                    <Input 
+                      type="text" 
+                      placeholder="Author name"
+                      value={authorName}
+                      onChange={(e) => setAuthorName(e.target.value)}
+                      className="w-full"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Sort Results By</label>
+                    <Select value={sortBy} onValueChange={setSortBy}>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Sort by relevance" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="relevance">Relevance</SelectItem>
+                        <SelectItem value="newest">Newest first</SelectItem>
+                        <SelectItem value="oldest">Oldest first</SelectItem>
+                        <SelectItem value="mostLiked">Most liked</SelectItem>
+                        <SelectItem value="mostComments">Most comments</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div className="mt-4 flex items-center">
+                  <Checkbox 
+                    id="verified-only" 
+                    checked={isVerified === true}
+                    onCheckedChange={(checked) => {
+                      setIsVerified(checked === true ? true : null);
+                    }}
+                  />
+                  <label htmlFor="verified-only" className="ml-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Show verified posts only
+                  </label>
+                </div>
+
+                <div className="mt-6 flex justify-end">
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    className="mr-2"
+                    onClick={clearFilters}
+                  >
+                    Clear Filters
+                  </Button>
+                </div>
+              </motion.div>
+            )}
+          </div>
+        </form>
+
+        {/* Search Results */}
+        <div className="mt-6">
+          {loading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[...Array(6)].map((_, i) => (
+                <Card key={i} className="overflow-hidden animate-pulse">
+                  <CardHeader>
+                    <Skeleton className="h-8 w-3/4 mb-2" />
+                    <Skeleton className="h-4 w-1/4" />
+                  </CardHeader>
+                  <CardContent>
+                    <Skeleton className="h-24 w-full" />
+                  </CardContent>
+                  <CardFooter className="flex justify-between">
+                    <Skeleton className="h-8 w-16" />
+                    <Skeleton className="h-8 w-20" />
+                  </CardFooter>
+                </Card>
+              ))}
+            </div>
+          ) : (
+            <>
+              {submitted && results.length === 0 ? (
+                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-10 text-center max-w-2xl mx-auto">
+                  <div className="mb-6 text-gray-500 dark:text-gray-400">
+                    <Search className="h-16 w-16 mx-auto mb-4 opacity-20" />
+                    <h2 className="text-xl font-semibold mb-2">No Results Found</h2>
+                    <p className="mb-6">
+                      We could not find any posts matching your search criteria. Try adjusting your search terms or filters.
+                    </p>
+                  </div>
+                  <Button 
+                    onClick={() => {
+                      setSearchQuery('');
+                      clearFilters();
+                      setSubmitted(false);
+                    }} 
+                    className="bg-primary-600 hover:bg-primary-700"
+                  >
+                    Clear Search
+                  </Button>
+                </div>
+              ) : submitted ? (
+                <>
+                  <div className="flex justify-between items-center mb-6">
+                    <h2 className="text-xl font-bold">
+                      Search Results 
+                      <span className="text-gray-500 dark:text-gray-400 font-normal ml-2">
+                        ({results.length} found)
+                      </span>
+                    </h2>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {results.map((post) => {
+                      // Truncate content for preview
+                      const truncatedContent = truncateText(post.summary || post.content, 150);
+                      const postDate = formatDistanceToNowSimple(post.createdAt);
+                      
+                      return (
+                        <motion.div
+                          key={post._id}
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.4 }}
+                        >
+                          <Card className="h-full flex flex-col overflow-hidden hover:shadow-md transition-shadow">
+                            <CardHeader className="p-6 pb-3">
+                              <div className="flex justify-between">
+                                <Badge variant="outline" className={`${getCategoryColor(post.category)} mb-2`}>
+                                  {post.category}
+                                </Badge>
+                                {post.isVerified && (
+                                  <Badge variant="outline" className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">
+                                    <CheckCircle2 className="h-3 w-3 mr-1" /> Verified
+                                  </Badge>
+                                )}
+                              </div>
+                              <Link href={`/posts/${post._id}`}>
+                                <CardTitle className="hover:text-primary-600 transition-colors text-xl">
+                                  {post.title}
+                                </CardTitle>
+                              </Link>
+                              <div className="text-sm text-gray-500 dark:text-gray-400 mt-1 flex items-center gap-2">
+                                <span>{postDate}</span>
+                                <span>•</span>
+                                <span className="flex items-center">
+                                  <ThumbsUp className="h-3.5 w-3.5 mr-1" /> {post.likes}
+                                </span>
+                              </div>
+                            </CardHeader>
+                            
+                            <CardContent className="px-6 py-3 flex-grow">
+                              <p className="text-gray-600 dark:text-gray-300">
+                                {truncatedContent}
+                              </p>
+                            </CardContent>
+                            
+                            <CardFooter className="px-6 py-4 flex justify-between">
+                              <div className="text-sm text-gray-500 dark:text-gray-400">
+                                By: {post.author?.name || "Unknown"}
+                              </div>
+                              <Button variant="outline" size="sm" asChild>
+                                <Link href={`/posts/${post._id}`}>Read More</Link>
+                              </Button>
+                            </CardFooter>
+                          </Card>
+                        </motion.div>
+                      );
+                    })}
+                  </div>
+                </>
+              ) : (
+                <div className="text-center py-12">
+                  <Search className="h-16 w-16 mx-auto mb-4 text-gray-300 dark:text-gray-700" />
+                  <h2 className="text-2xl font-semibold mb-2">Ready to find something?</h2>
+                  <p className="text-gray-600 dark:text-gray-400 max-w-lg mx-auto">
+                    Enter your search terms above and use the advanced filters to narrow down your results.
+                  </p>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      </div>
+      <Toaster />
+    </main>
+  );
+}

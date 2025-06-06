@@ -2,6 +2,9 @@ import { auth0 } from "@/lib/auth0";
 import { DISPATCH_URL } from "@/lib/config";
 import axios from "axios";
 
+// Force dynamic rendering for utilities that use auth
+export const dynamic = "force-dynamic";
+
 export async function getDashboardStats() {
   try {
     const token = (await auth0.getAccessToken()).token;

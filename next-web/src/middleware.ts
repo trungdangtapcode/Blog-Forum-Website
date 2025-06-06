@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth0 } from "./lib/auth0";
 
+// Force dynamic rendering at middleware level
+export const dynamic = "force-dynamic";
+
 export async function middleware(request: NextRequest) {
   const authRes = await auth0.middleware(request);
 
@@ -15,9 +18,11 @@ export async function middleware(request: NextRequest) {
   }
   if (request.nextUrl.pathname==='/') {
     return authRes;
-  }
-  // Allow direct API requests to go through without auth check
-  if (request.nextUrl.pathname.includes('/api/')) {
+  }  // Allow direct API requests and static pages to go through without auth check
+  if (request.nextUrl.pathname.includes('/api/') || 
+      request.nextUrl.pathname === '/' ||
+      request.nextUrl.pathname.startsWith('/landing') ||
+      request.nextUrl.pathname.startsWith('/public')) {
     return NextResponse.next();
   }
 

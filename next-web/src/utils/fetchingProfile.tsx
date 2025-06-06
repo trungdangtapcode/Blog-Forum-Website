@@ -1,6 +1,8 @@
 import { auth0 } from "@/lib/auth0";
-
 import axios from "axios";
+
+// Force dynamic rendering for utilities that use auth
+export const dynamic = "force-dynamic";
 const tmp = {
     avatar: '/default-avatar.png',
     email: 'user@example.com',
