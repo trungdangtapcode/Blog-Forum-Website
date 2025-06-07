@@ -25,6 +25,7 @@ export async function fetchNotifications(): Promise<Notification[]> {
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`,
+        'ngrok-skip-browser-warning': '69420'
       },
     });
     
@@ -48,6 +49,7 @@ export async function getUnreadNotificationsCount(): Promise<number> {
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`,
+        'ngrok-skip-browser-warning': '69420'
       },
     });
     
@@ -72,6 +74,7 @@ export async function markNotificationAsRead(notificationId: string): Promise<vo
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`,
+        'ngrok-skip-browser-warning': '69420'
       },
     });
     
@@ -92,6 +95,7 @@ export async function markAllNotificationsAsRead(): Promise<void> {
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`,
+        'ngrok-skip-browser-warning': '69420'
       },
     });
     
@@ -110,6 +114,7 @@ export async function deleteNotification(notificationId: string): Promise<void> 
       credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
+        'ngrok-skip-browser-warning': '69420'
       },
     });
     
@@ -135,6 +140,7 @@ export async function addTestNotification(
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'ngrok-skip-browser-warning': '69420'
       },
       body: JSON.stringify({
         recipientId,
