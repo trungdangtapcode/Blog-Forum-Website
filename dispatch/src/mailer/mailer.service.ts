@@ -101,7 +101,7 @@ export class MailerService {
         <p>Thank you for joining our community. Please verify your email address by clicking the button below:</p>
         <p>
           <a 
-            href="http://localhost:3000/verify-email?token=${accountId}" 
+            href="https://forum-blog-website.vercel.app/verify-email?token=${accountId}" 
             style="padding: 10px 15px; background-color: #4CAF50; color: white; text-decoration: none; border-radius: 4px;"
           >
             Verify Email
@@ -165,7 +165,7 @@ export class MailerService {
         <p>${message}</p>
         <p>
           <a 
-            href="http://localhost:3000/notifications" 
+            href="https://forum-blog-website.vercel.app/notifications" 
             style="padding: 10px 15px; background-color: #2196F3; color: white; text-decoration: none; border-radius: 4px;"
           >
             View Notifications

@@ -10,17 +10,6 @@ import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import toast, { Toaster } from 'react-hot-toast';
-
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "../../../components/ui/alert-dialog";
 import CommentSection from "@/components/post/FixedCommentSection2";
 import SharingBox from "@/components/post/SharingBox";
 import SavePostButton from "@/components/post/SavePostButton";
@@ -31,6 +20,18 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { tomorrow } from 'react-syntax-highlighter/dist/cjs/styles/prism';
 import { useRouter } from "next/navigation";
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+
 import type { FC } from "react";
 import { getPublicProfile } from "@/utils/fetchingProfilePublic";
 
@@ -38,7 +39,8 @@ interface PostDetailClientProps {
   params: { id: string };
 }
 
-const PostDetailClient: FC<PostDetailClientProps> = ({ params }) => {  const [post, setPost] = useState<Post | null>(null);
+const PostDetailClient: FC<PostDetailClientProps> = ({ params }) => {
+  const [post, setPost] = useState<Post | null>(null);
   const [loading, setLoading] = useState(true);
   const [author, setAuthor] = useState<AccountPublicProfile | null>(null);
   const [userReaction, setUserReaction] = useState<'like' | 'dislike' | null>(null);
@@ -50,13 +52,20 @@ const PostDetailClient: FC<PostDetailClientProps> = ({ params }) => {  const [po
   useEffect(() => {
     const fetchPost = async () => {
       try {
-        const { id } = await params;
+        const { id } = params;
         const fetchedPost = await getPostById(id);
         setPost(fetchedPost);
 
-        const publicProfile = await getPublicProfile(fetchedPost.author);
-        setAuthor(publicProfile);
+        if (fetchedPost && fetchedPost.author) {
+          const authorId = typeof fetchedPost.author === 'string' 
+            ? fetchedPost.author 
+            : fetchedPost.author._id;
+          
+          const publicProfile = await getPublicProfile(authorId);
+          setAuthor(publicProfile);
+        }
 
+        // Check if user is the author of the post
         try {
           const authorStatus = await isPostAuthor(id);
           setIsAuthor(authorStatus);
@@ -64,10 +73,9 @@ const PostDetailClient: FC<PostDetailClientProps> = ({ params }) => {  const [po
           console.error("Error checking author status:", error);
         }
 
+        // Check if user has already liked/disliked the post
         try {
           const likeStatus = await isPostLiked(id);
-          
-          console.log('likeStatus:',likeStatus)
           if (likeStatus && likeStatus.action) {
             setUserReaction(likeStatus.action);
           }
@@ -83,9 +91,12 @@ const PostDetailClient: FC<PostDetailClientProps> = ({ params }) => {  const [po
     };
 
     fetchPost();
-  }, [params]);const handleReaction = async (action: 'like' | 'dislike') => {
+  }, [params]);
+
+  const handleReaction = async (action: 'like' | 'dislike') => {
     if (!post) return;
     
+    // Prevent rapid successive clicks
     if (reactionInProgress) {
       toast.error("Please wait for the previous action to complete");
       return;
@@ -95,11 +106,10 @@ const PostDetailClient: FC<PostDetailClientProps> = ({ params }) => {  const [po
     
     try {
       if (userReaction === action) {
+        // Update UI optimistically
         setPost(prev => {
           if (!prev) return prev;
-          
           const delta = action === 'like' ? -1 : 1;
-          
           return {
             ...prev,
             likes: Math.max(0, prev.likes + delta)
@@ -107,10 +117,10 @@ const PostDetailClient: FC<PostDetailClientProps> = ({ params }) => {  const [po
         });
         
         setUserReaction(null);
-        
         await unlikePost(post._id);
         toast.success(`Your ${action} has been removed`);
       } else {
+        // Update UI optimistically
         setPost(prev => {
           if (!prev) return prev;
           
@@ -129,7 +139,6 @@ const PostDetailClient: FC<PostDetailClientProps> = ({ params }) => {  const [po
         });
         
         setUserReaction(action);
-        
         await likePost(post._id, action);
         toast.success(`Post ${action === 'like' ? 'liked' : 'disliked'} successfully`);
       }
@@ -137,20 +146,19 @@ const PostDetailClient: FC<PostDetailClientProps> = ({ params }) => {  const [po
       console.error("Error reacting to post:", error);
       toast.error("Failed to register your reaction. Please try again.");
       
-      setUserReaction(prevReaction => {
-        if (prevReaction === action) {
-          return action;
-        } 
-        else {
-          return userReaction;
-        }
-      });
-        try {
-        const { id } = params;
-        const fetchedPost = await getPostById(id);
+      // Revert UI changes on error
+      try {
+        const fetchedPost = await getPostById(params.id);
         setPost(fetchedPost);
-      } catch (error) {
-        console.error("Error restoring post state:", error);
+        
+        const likeStatus = await isPostLiked(params.id);
+        if (likeStatus && likeStatus.action) {
+          setUserReaction(likeStatus.action);
+        } else {
+          setUserReaction(null);
+        }
+      } catch (restoreError) {
+        console.error("Error restoring post state:", restoreError);
       }
     } finally {
       setTimeout(() => {
@@ -161,8 +169,6 @@ const PostDetailClient: FC<PostDetailClientProps> = ({ params }) => {  const [po
 
   const handleDeletePost = async () => {
     if (!post) return;
-    
-    setAlertOpen(false);
     
     try {
       await deletePost(post._id);
@@ -176,7 +182,7 @@ const PostDetailClient: FC<PostDetailClientProps> = ({ params }) => {  const [po
   
   if (loading) {
     return (
-      <div className="container mx-auto px-4 py-10 max-w-4xl ">
+      <div className="container mx-auto px-4 py-10 max-w-4xl">
         <Skeleton className="h-[125px] w-[250px] rounded-xl mb-4" />
         <Skeleton className="h-12 w-3/4 mb-4" />
         <Skeleton className="h-6 w-1/4 mb-8" />
@@ -192,7 +198,7 @@ const PostDetailClient: FC<PostDetailClientProps> = ({ params }) => {  const [po
     return (
       <div className="container mx-auto px-4 py-20 text-center">
         <h1 className="text-3xl font-bold mb-4">Post not found</h1>
-        <p>The post you&#39;re looking for doesn&#39;t exist or has been removed.</p>
+        <p>The post you are looking for does not exist or has been removed.</p>
         <Link href="/posts">
           <Button variant="secondary" className="mt-6">
             Back to Posts
@@ -202,6 +208,7 @@ const PostDetailClient: FC<PostDetailClientProps> = ({ params }) => {  const [po
     );
   }
 
+  // Create category color based on category name
   const getCategoryColor = (category: string) => {
     switch (category.toLowerCase()) {
       case 'technology':
@@ -231,7 +238,7 @@ const PostDetailClient: FC<PostDetailClientProps> = ({ params }) => {  const [po
           <h1 className="text-4xl font-bold mb-4 text-primary-800 dark:text-primary-100">
             {post.title}
           </h1>
-            <div className="flex flex-wrap items-center gap-4 mb-6">
+          <div className="flex flex-wrap items-center gap-4 mb-6">
             <Badge variant="outline" className={getCategoryColor(post.category)}>
               {post.category || "General"}
             </Badge>
@@ -250,7 +257,7 @@ const PostDetailClient: FC<PostDetailClientProps> = ({ params }) => {  const [po
               {post.createdAt ? format(new Date(post.createdAt), 'MMMM dd, yyyy') : "Unknown date"}
             </span>
           </div>
-            <Link href={`/profile/${post.author && typeof post.author !== 'string' ? post.author._id : post.author}`} className="flex items-center group">
+          <Link href={`/profile/${post.author && typeof post.author !== 'string' ? post.author._id : post.author}`} className="flex items-center group">
             <Avatar className="h-10 w-10">
               <AvatarImage src={author?.avatar || "/default-avatar.png"} alt="Author Avatar" />
               <AvatarFallback>AU</AvatarFallback>
@@ -284,7 +291,8 @@ const PostDetailClient: FC<PostDetailClientProps> = ({ params }) => {  const [po
               tbody: ({...props}) => <tbody {...props} />,
               tr: ({...props}) => <tr className="border-b border-gray-300 dark:border-gray-700" {...props} />,
               th: ({...props}) => <th className="px-4 py-2 text-left font-semibold border-r border-gray-300 dark:border-gray-700 last:border-r-0" {...props} />,
-              td: ({...props}) => <td className="px-4 py-2 border-r border-gray-300 dark:border-gray-700 last:border-r-0" {...props} />,              code: ({className, children, ...props}) => {
+              td: ({...props}) => <td className="px-4 py-2 border-r border-gray-300 dark:border-gray-700 last:border-r-0" {...props} />,
+              code: ({className, children, ...props}) => {
                 const match = /language-(\w+)/.exec(className || '');
                 return match ? (                  
                 <SyntaxHighlighter
@@ -318,7 +326,7 @@ const PostDetailClient: FC<PostDetailClientProps> = ({ params }) => {  const [po
             }`}>
               {post.likes || 0} votes
             </div>
-              <Button
+            <Button
               variant="ghost"
               size="sm"
               onClick={() => handleReaction('like')}
@@ -339,26 +347,23 @@ const PostDetailClient: FC<PostDetailClientProps> = ({ params }) => {  const [po
               <ThumbsDown className={`h-5 w-5 mr-2 ${reactionInProgress ? 'animate-pulse' : ''}`} />
               Dislike
             </Button>
-          </div>          <div className="flex gap-2">
+          </div>
+          <div className="flex gap-2">
             {isAuthor && (
               <>
                 <Link href={`/posts/edit/${post._id}`}>
                   <Button variant="outline" size="icon" title="Edit Post">
                     <Edit className="h-4 w-4" />
                   </Button>
-                </Link>                <Button 
-                  variant="outline" 
-                  size="icon" 
-                  title="Delete Post" 
-                  className="border-red-200 hover:bg-red-50 hover:text-red-600"
-                  onClick={() => setAlertOpen(true)}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
+                </Link>
+                <AlertDialogTrigger>
+                  <Button variant="outline" size="icon" title="Delete Post" className="border-red-200 hover:bg-red-50 hover:text-red-600">
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </AlertDialogTrigger>
               </>
             )}
             <SharingBox postId={post._id} postTitle={post.title} />
-            
             <SavePostButton postId={post._id} variant="outline" size="icon" />
           </div>
         </div>
@@ -375,19 +380,14 @@ const PostDetailClient: FC<PostDetailClientProps> = ({ params }) => {  const [po
       <AlertDialog open={alertOpen} onOpenChange={setAlertOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-lg font-semibold">
-              Confirm Deletion
-            </AlertDialogTitle>
+            <AlertDialogTitle>Confirm Deletion</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this post? This action cannot be undone.
+            </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogDescription className="text-sm text-gray-500">
-            Are you sure you want to delete this post? This action cannot be undone.
-          </AlertDialogDescription>
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setAlertOpen(false)}>
-              Cancel
-            </AlertDialogCancel>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={handleDeletePost} className="bg-red-600 text-white hover:bg-red-700">
-              <Trash2 className="mr-2 h-5 w-5" />
               Delete Post
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -395,6 +395,6 @@ const PostDetailClient: FC<PostDetailClientProps> = ({ params }) => {  const [po
       </AlertDialog>
     </div>
   );
-}
+};
 
 export default PostDetailClient;

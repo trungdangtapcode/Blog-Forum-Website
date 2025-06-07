@@ -139,6 +139,34 @@ export async function updatePost(id: string, postData: Partial<CreatePostInput>)
   }
 }
 
+export async function deletePost(id: string) {
+  const token = await auth0Client.getToken();
+  if (!token) {
+    throw new Error('Session not found');
+  }
+  
+  try {
+    const response = await axios.delete(
+      `${DISPATCH_URL}/post/delete/${id}`,
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+          'ngrok-skip-browser-warning': '69420'
+        },
+      }
+    );
+    
+    if (response.status >= 200 && response.status < 300) {
+      return response.data;
+    }
+    throw new Error('Failed to delete post');
+  } catch (error) {
+    console.error('Error deleting post:', error);
+    throw error;
+  }
+}
+
 export async function isPostAuthor(postId: string): Promise<boolean> {
   // Check if postId is valid
   if (!postId) {

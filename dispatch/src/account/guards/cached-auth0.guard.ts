@@ -84,9 +84,15 @@ export class CachedAuth0Guard implements CanActivate, OnModuleInit {
     }
 
     const token = authHeader.split(' ')[1];
+
+    if (!token || token.toLowerCase() === 'null') {
+      this.logger.error('Token is null or invalid');
+      throw new UnauthorizedException('Token is null or invalid');
+    }
+
     // Avoid logging sensitive information in production
     this.logger.debug(`Token received (first 10 chars): ${token.substring(0, 10)}...`);
-    
+
     // Use the same cache key format as in AccountService
     const cacheKey = createCacheKey(token);
     this.logger.debug(`Cache key: ${cacheKey}`);

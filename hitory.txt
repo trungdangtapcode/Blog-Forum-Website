@@ -57,6 +57,8 @@ Hydration failed because the server rendered HTML didn't match the client. As a 
 
 ui/accordion
 
+SplashScreen
+
 =======================
 
 git ls-files | awk '{
