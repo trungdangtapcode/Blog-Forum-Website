@@ -7,6 +7,9 @@ interface AccountProfile {
 	location: string;
 	occupation: string;
 	_id: string;
+	isVerified?: boolean;
+	isAdmin?: boolean;
+	savedPosts?: string[];
 }
 
 type AccountPublicProfile = Partial<AccountProfile>;

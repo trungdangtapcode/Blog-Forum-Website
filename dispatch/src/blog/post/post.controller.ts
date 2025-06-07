@@ -16,8 +16,7 @@ export class PostController {
     private readonly postService: PostService,
     private readonly accountService: AccountService,
     private readonly notificationService: NotificationService
-  ) {}
-  @Post('create')
+  ) {}  @Post('create')
   @UseGuards(CachedAuth0Guard)
   @UsePipes(new ValidationPipe())
   async create(@Req() req: Request & { user: any }, @Body() createPostDto: CreatePostDto) {
@@ -25,6 +24,11 @@ export class PostController {
     const email = req.user.email;
     const profile: AccountProfile = await this.accountService.getProfile(email);
     const userId = profile._id as string;
+    
+    // Check if the user is verified
+    // if (!profile.isVerified) {
+    //   throw new UnauthorizedException('Only verified accounts can create posts');
+    // }
     
     // Create the post
     const newPost = await this.postService.create({...createPostDto, author: userId});

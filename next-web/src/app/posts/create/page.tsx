@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { createPost, CreatePostInput } from "@/utils/postFetching";
 import { Button } from "@/components/ui/button";
@@ -17,8 +17,10 @@ import {
   ToastClose,
   ToastViewport,
 } from "@/components/ui/toast"; // Your shadcn toast components
-import { Loader2, ArrowLeft } from "lucide-react";
+import { Loader2, ArrowLeft, AlertTriangle } from "lucide-react";
 import Link from "next/link";
+import { auth0Client } from "@/lib/auth0-client";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 // Define post categories
 const categories = [
@@ -39,6 +41,8 @@ export default function CreatePostPage() {
   });
 
   const [submitting, setSubmitting] = useState(false);
+  const [userProfile, setUserProfile] = useState<AccountProfile | null>(null);
+  const [loading, setLoading] = useState(true);
   const [toasts, setToasts] = useState<
     Array<{
       id: string;
@@ -47,10 +51,9 @@ export default function CreatePostPage() {
       variant: "default" | "destructive";
       open: boolean;
     }>
-  >([]);
-  const router = useRouter();
-
-  const showToast = (
+  >([]);  const router = useRouter();
+  
+  const showToast = useCallback((
     title: string,
     description: string,
     variant: "default" | "destructive" = "default"
@@ -60,13 +63,69 @@ export default function CreatePostPage() {
       ...prev,
       { id, title, description, variant, open: true },
     ]);
-    // Auto-close after 4 seconds
+    // Auto-close after 6 seconds (longer for important messages)
     setTimeout(() => {
       setToasts((prev) =>
         prev.map((t) => (t.id === id ? { ...t, open: false } : t))
       );
-    }, 4000);
-  };
+    }, 6000);
+  }, []);
+
+  // Fetch user profile to check verification status
+  useEffect(() => {
+    let timeoutId: NodeJS.Timeout;
+
+    const fetchUserProfile = async () => {
+      try {
+        setLoading(true);
+        const session = await auth0Client.getSession();
+        if (!session) {
+          router.push('/api/auth/login');
+          return;
+        }
+        
+        const profile = await fetch('/api/account/profile', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          }
+        })
+        .then(res => res.json())
+        .catch(err => {
+          console.error('Error fetching profile:', err);
+          return null;
+        });
+        
+        setUserProfile(profile);
+
+        // Check if user is verified, if not show toast and redirect
+        if (profile && !profile.isVerified) {
+          // Show toast message immediately
+          showToast(
+            "Account Not Verified", 
+            "Only verified accounts can create posts. Please contact an administrator to verify your account.", 
+            "destructive"
+          );
+          
+          // Redirect back to posts page after a delay so the toast is visible
+          timeoutId = setTimeout(() => router.push('/posts'), 3000);
+        }
+      } catch (error) {
+        console.error('Error fetching user profile:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchUserProfile();
+
+    // Clean up the timeout if component unmounts
+    return () => {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+    };
+  }, [router, showToast]);
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -90,6 +149,17 @@ export default function CreatePostPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Check if user is verified
+    if (userProfile && !userProfile.isVerified) {
+      showToast(
+        "Account Not Verified",
+        "Only verified accounts can create posts. Please contact an administrator to verify your account.",
+        "destructive"
+      );
+      setTimeout(() => router.push('/posts'), 1500);
+      return;
+    }
 
     // Basic validation
     if (!formData.title.trim() || !formData.content.trim()) {
@@ -134,6 +204,17 @@ export default function CreatePostPage() {
             <ArrowLeft className="mr-2 h-4 w-4" /> Back to Posts
           </Link>
 
+          {/* Verification Warning */}
+          {!loading && userProfile && !userProfile.isVerified && (
+            <Alert variant="destructive" className="mb-6">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertTitle>Account Not Verified</AlertTitle>
+              <AlertDescription>
+                Only verified accounts can create posts. Please contact an administrator to verify your account.
+              </AlertDescription>
+            </Alert>
+          )}
+
           <Card className="mb-6">
             <CardHeader>
               <CardTitle className="text-2xl">Create a New Post</CardTitle>
@@ -155,6 +236,7 @@ export default function CreatePostPage() {
                     value={formData.title}
                     onChange={handleInputChange}
                     required
+                    disabled={!!userProfile && !userProfile.isVerified}
                   />
                 </div>
 
@@ -163,6 +245,7 @@ export default function CreatePostPage() {
                   <Select
                     value={formData.category}
                     onValueChange={handleCategoryChange}
+                    disabled={!!userProfile && !userProfile.isVerified}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select a category" />
@@ -186,6 +269,7 @@ export default function CreatePostPage() {
                     value={formData.summary || ""}
                     onChange={handleInputChange}
                     rows={2}
+                    disabled={!!userProfile && !userProfile.isVerified}
                   />
                 </div>
 
@@ -201,6 +285,7 @@ export default function CreatePostPage() {
                     onChange={handleInputChange}
                     rows={12}
                     required
+                    disabled={!!userProfile && !userProfile.isVerified}
                   />
                   <p className="text-xs text-gray-500 dark:text-gray-400">
                     Simple formatting is supported. Use markdown-style syntax for
@@ -218,7 +303,10 @@ export default function CreatePostPage() {
                 >
                   Cancel
                 </Button>
-                <Button type="submit" disabled={submitting}>
+                <Button 
+                  type="submit" 
+                  disabled={submitting || (!!userProfile && !userProfile.isVerified)}
+                >
                   {submitting ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
