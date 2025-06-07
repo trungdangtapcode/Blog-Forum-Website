@@ -9,6 +9,42 @@ import { AccountProfile } from './accountProfile.chema';
 export class AccountController {
 	constructor(private AccountService: AccountService) {}
 	
+	@Get("/getAllProfiles")
+	@UseGuards(CachedAuth0Guard)
+	async getAllProfiles(@Req() req: Request  & { user: any }) {
+		console.log('Get all profiles requested');
+		const email = req.user.email;
+		
+		// Check if user is admin
+		const profile = await this.AccountService.getProfile(email);
+		if (!profile.isAdmin) {
+			return { error: 'Unauthorized - Admin access required' };
+		}
+		
+		// Get all profiles
+		return this.AccountService.getAllProfiles();
+	}
+	
+	@Post("/verifyUser/:userId")
+	@UseGuards(CachedAuth0Guard)
+	async verifyUser(
+		@Req() req: Request & { user: any }, 
+		@Param('userId') userId: string,
+		@Body() body: { isVerified: boolean }
+	) {
+		console.log(`Verify user requested for user ${userId}`);
+		const email = req.user.email;
+		
+		// Check if user is admin
+		const profile = await this.AccountService.getProfile(email);
+		if (!profile.isAdmin) {
+			return { error: 'Unauthorized - Admin access required' };
+		}
+		
+		// Update user verification status
+		return this.AccountService.verifyUser(userId, body.isVerified);
+	}
+	
 	@Get("/test")
 	@UseGuards(AuthGuard('auth0'))
 	test(){

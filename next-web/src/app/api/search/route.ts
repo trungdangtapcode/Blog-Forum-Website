@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
-  const backendUrl = process.env.NEXT_PUBLIC_DISPATCH_URL || 'http://localhost:3000';
+  const backendUrl = process.env.NEXT_PUBLIC_DISPATCH_URL || 'http://localhost:3010';
   // return backendUrl
   const searchBody = await request.json();
   console.log('searchBody:',searchBody)

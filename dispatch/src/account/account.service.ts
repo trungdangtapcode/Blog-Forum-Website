@@ -23,6 +23,34 @@ export class AccountService {
         @Inject(CACHE_MANAGER) private cacheManager: Cache
     ) {}
 
+	async getAllProfiles(): Promise<AccountProfile[]> {
+		try {
+			return await this.profileModel.find().exec();
+		} catch (error) {
+			Logger.error('Error fetching all profiles', error.stack, 'AccountService');
+			throw error;
+		}
+	}
+	
+	async verifyUser(userId: string, isVerified: boolean): Promise<AccountProfile> {
+		try {
+			const user = await this.profileModel.findByIdAndUpdate(
+				userId,
+				{ isVerified },
+				{ new: true }
+			).exec();
+			
+			if (!user) {
+				throw new NotFoundException(`User with ID ${userId} not found`);
+			}
+			
+			return user;
+		} catch (error) {
+			Logger.error(`Error ${isVerified ? 'verifying' : 'unverifying'} user`, error.stack, 'AccountService');
+			throw error;
+		}
+	}
+	
 	async updateProfile(email: string, profileData: Partial<UpdateProfileDto>){
 		// console.log('Inside Account Service', email, profileData);
 		const profile = await this.profileModel.findOne({email: email});
