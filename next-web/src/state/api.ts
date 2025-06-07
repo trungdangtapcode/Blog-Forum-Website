@@ -27,6 +27,8 @@ export const api = createApi({
       if (idToken) {
         headers.set("Authorization", `Bearer ${idToken}`);
       }
+      // Add ngrok header to bypass browser warning
+      headers.set("ngrok-skip-browser-warning", "69420");
       return headers;
     },
   }),

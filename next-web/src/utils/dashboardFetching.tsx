@@ -19,6 +19,7 @@ export async function getDashboardStats() {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
+          'ngrok-skip-browser-warning': '69420'
         },
       }
     );

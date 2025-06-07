@@ -133,7 +133,8 @@ export async function getSavedPosts() {
           'Authorization': `Bearer ${token}`,
           'Cache-Control': 'no-cache, no-store, must-revalidate',
           'Pragma': 'no-cache',
-          'Expires': '0'
+          'Expires': '0',
+          'ngrok-skip-browser-warning': '69420'
         }
       }
     );

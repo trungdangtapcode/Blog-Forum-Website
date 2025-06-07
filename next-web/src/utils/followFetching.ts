@@ -8,7 +8,8 @@ export const getFollowing = async () => {
       {
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${token}`,
+          'ngrok-skip-browser-warning': '69420'
         },
 	    });
     return response.data;
@@ -25,7 +26,8 @@ export const getFollowers = async () => {
       {
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${token}`,
+          'ngrok-skip-browser-warning': '69420'
         },
 	    });
     return response.data;

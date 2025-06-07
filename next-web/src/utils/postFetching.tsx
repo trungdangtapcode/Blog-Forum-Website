@@ -35,7 +35,12 @@ export async function getPosts() {
   // const DISPATCH_URL = process.env.NEXT_PUBLIC_DISPATCH_URL || 'https://example.com';
   try {
     const response = await axios.get(
-      `${DISPATCH_URL}/post/get`
+      `${DISPATCH_URL}/post/get`,
+      {
+        headers: {
+          'ngrok-skip-browser-warning': '69420'
+        }
+      }
     );
     
     if (response.status >= 200 && response.status < 300) {
@@ -58,7 +63,12 @@ export async function getPostById(id: string) {
   // console.log('id:',id)
   try {
     const response = await axios.get(
-      `${DISPATCH_URL}/post/get/${id}`
+      `${DISPATCH_URL}/post/get/${id}`,
+      {
+        headers: {
+          'ngrok-skip-browser-warning': '69420'
+        }
+      }
     );
     
     if (response.status >= 200 && response.status < 300) {
@@ -152,6 +162,7 @@ export async function isPostAuthor(postId: string): Promise<boolean> {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
+          'ngrok-skip-browser-warning': '69420'
         },
       }
     );
@@ -307,7 +318,8 @@ export async function getPostsByAuthor(authorId: string) {
         headers: {
           'Cache-Control': 'no-cache, no-store, must-revalidate',
           'Pragma': 'no-cache',
-          'Expires': '0'
+          'Expires': '0',
+          'ngrok-skip-browser-warning': '69420'
         }
       }
     );
@@ -369,7 +381,14 @@ export async function unfollowUser(userId: string) {
 
 export async function getFollowCounts(userId: string) {
   try {
-    const response = await axios.get(`${DISPATCH_URL}/account/follow/counts/${userId}`);
+    const response = await axios.get(
+      `${DISPATCH_URL}/account/follow/counts/${userId}`,
+      {
+        headers: {
+          'ngrok-skip-browser-warning': '69420'
+        }
+      }
+    );
     
     if (response.status >= 200 && response.status < 300) {
       return response.data;
@@ -388,7 +407,8 @@ export async function isFollowing(userId: string) {
       `${DISPATCH_URL}/account/follow/status/${userId}`,
       {
         headers: {
-          Authorization: `Bearer ${token}`,
+          'Authorization': `Bearer ${token}`,
+          'ngrok-skip-browser-warning': '69420'
         },
       }
     );
@@ -405,7 +425,14 @@ export async function isFollowing(userId: string) {
 
 export async function getFollowers(userId: string) {
   try {
-    const response = await axios.get(`${DISPATCH_URL}/account/followers/${userId}`);
+    const response = await axios.get(
+      `${DISPATCH_URL}/account/followers/${userId}`,
+      {
+        headers: {
+          'ngrok-skip-browser-warning': '69420'
+        }
+      }
+    );
     
     if (response.status >= 200 && response.status < 300) {
       return response.data;
@@ -419,7 +446,14 @@ export async function getFollowers(userId: string) {
 
 export async function getFollowing(userId: string) {
   try {
-    const response = await axios.get(`${DISPATCH_URL}/account/following/${userId}`);
+    const response = await axios.get(
+      `${DISPATCH_URL}/account/following/${userId}`,
+      {
+        headers: {
+          'ngrok-skip-browser-warning': '69420'
+        }
+      }
+    );
     
     if (response.status >= 200 && response.status < 300) {
       return response.data;

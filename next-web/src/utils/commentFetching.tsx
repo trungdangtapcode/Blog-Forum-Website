@@ -32,7 +32,12 @@ export interface CreateCommentInput {
 export async function getCommentsByPostId(postId: string) {
   try {
     const response = await axios.get(
-      `${DISPATCH_URL}/post/comment/post/${postId}`
+      `${DISPATCH_URL}/post/comment/post/${postId}`,
+      {
+        headers: {
+          'ngrok-skip-browser-warning': '69420'
+        }
+      }
     );
     
     if (response.status >= 200 && response.status < 300) {
