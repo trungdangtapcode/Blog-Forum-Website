@@ -10,6 +10,7 @@ import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import toast, { Toaster } from 'react-hot-toast';
+import { AudioPlayer } from "@/components/ui/audio-player";
 
 import {
   AlertDialog,
@@ -328,8 +329,7 @@ const PostDetailClient: FC<PostDetailClientProps> = ({ params }) => {  const [po
               <ThumbsUp className={`h-5 w-5 mr-2 ${reactionInProgress ? 'animate-pulse' : ''}`} />
               {userReaction === 'like' ? 'Liked' : 'Like'}
             </Button>
-            
-            <Button
+              <Button
               variant="ghost"
               size="sm"
               onClick={() => handleReaction('dislike')}
@@ -339,7 +339,11 @@ const PostDetailClient: FC<PostDetailClientProps> = ({ params }) => {  const [po
               <ThumbsDown className={`h-5 w-5 mr-2 ${reactionInProgress ? 'animate-pulse' : ''}`} />
               Dislike
             </Button>
-          </div>          <div className="flex gap-2">
+            
+            {/* Audio Player */}
+            <AudioPlayer postId={post._id} />
+          </div>          
+          <div className="flex gap-2">
             {isAuthor && (
               <>
                 <Link href={`/posts/edit/${post._id}`}>

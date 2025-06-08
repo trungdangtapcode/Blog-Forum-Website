@@ -11,6 +11,7 @@ import { TokenModule } from './utils/token.module';
 import { MailerModule } from './mailer/mailer.module';
 import { MessageModule } from './message/message.module';
 import { SearchModule } from './search/search.module';
+import { TextToSpeechModule } from './blog/text-to-speech/text-to-speech.module';
 
 @Module({  
   imports: [
@@ -40,6 +41,7 @@ import { SearchModule } from './search/search.module';
     MessageModule,
     SearchModule,
     MongooseModule.forRoot(process.env.MONGO_URI),
+    TextToSpeechModule, // Assuming TextToSpeechModule is defined in the same directory
   ],
   controllers: [AppController],
   providers: [AppService],

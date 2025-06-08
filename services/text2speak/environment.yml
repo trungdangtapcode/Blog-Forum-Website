@@ -1,0 +1,14 @@
+name: se104-fastapi-tts
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.10
+  - pip
+  - pip:
+      - fastapi
+      - uvicorn
+      - gtts
+      - nltk
+      - markdown
+      - beautifulsoup4

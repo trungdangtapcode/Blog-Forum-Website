@@ -18,7 +18,7 @@ import { SearchModule } from '@/search/search.module';
     SearchModule,
     MongooseModule.forFeature([{ name: Post.name, schema: PostSchema }]),
     MongooseModule.forFeature([{ name: Like.name, schema: LikeSchema }]),
-  ],
+  ],  
   controllers: [PostController],
   providers: [
     PostService,    // {
@@ -26,5 +26,6 @@ import { SearchModule } from '@/search/search.module';
     //   useClass: CachedAuth0Guard,
     // },
   ],
+  exports: [PostService],
 })
 export class PostModule {}
