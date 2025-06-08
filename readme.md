@@ -205,6 +205,9 @@ blog_forum_project/
 ### Article View
 ![Article Detail](./next-web/public/showcase/example_artical_maxinforl.png)
 
+### Markdown and Comment Exmaple
+![Article Detail](./next-web/public/showcase/example_markdown_comment.png)
+
 ### Search Interface
 ![Search Feature](./next-web/public/showcase/search_showcase.png)
 
