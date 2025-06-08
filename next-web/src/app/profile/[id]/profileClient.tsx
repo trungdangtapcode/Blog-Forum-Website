@@ -6,7 +6,7 @@ import { getPostsByAuthor, Post, followUser, unfollowUser, getFollowCounts, isFo
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, MapPin, Briefcase, Calendar, UserPlus, UserMinus, MessageCircle } from "lucide-react";
+import { ArrowLeft, MapPin, Briefcase, Calendar, UserPlus, UserMinus, MessageCircle, CheckCircle } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -27,6 +27,7 @@ interface AccountPublicProfile {
   location?: string;
   occupation?: string;
   joinedDate?: Date | string;
+  isVerified?: boolean;
 }
 
 interface User {
@@ -238,10 +239,18 @@ const ProfilePageClient = ({ params }: ProfilePageClientProps) => {
           <AvatarImage src={profile.avatar || "/default-avatar.png"} alt="Profile Avatar" />
           <AvatarFallback>{profile.fullName?.substring(0, 2) || "AU"}</AvatarFallback>
         </Avatar>
-        <div className="flex-1">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div>
-              <h1 className="text-3xl font-bold mb-2">{profile.fullName || "Anonymous User"}</h1>
+        <div className="flex-1">          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>              <h1 className="text-3xl font-bold mb-2 flex items-center">
+                {profile.fullName || "Anonymous User"}
+                {profile.isVerified && (
+                  <span className="relative group">
+                    <CheckCircle className="ml-2 h-5 w-5 text-blue-500" aria-label="Verified Account" />
+                    <span className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-black text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      Verified Account
+                    </span>
+                  </span>
+                )}
+              </h1>
               
               {/* Follow counts */}
               <div className="flex gap-4 mb-3">

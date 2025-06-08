@@ -41,6 +41,7 @@ import { Badge } from "@/components/ui/badge";
 import toast, { Toaster } from "react-hot-toast";
 import { Loader2, CheckCircle, XCircle, Trash2, Mail } from "lucide-react";
 import { auth0Client } from "@/lib/auth0-client";
+import Link from 'next/link';
 
 interface PostData {
   _id: string;
@@ -399,7 +400,11 @@ export default function AdminPage() {
                   ) : (
                     users.map((user) => (
                       <TableRow key={user._id}>
-                        <TableCell className="font-medium">{user.fullName || 'No name'}</TableCell>
+                        <TableCell className="font-medium">
+                          <Link href={`profile/${user._id}`}>
+                            {user.fullName || 'No name'}
+                          </Link>
+                        </TableCell>
                         <TableCell>{user.email}</TableCell>
                         <TableCell>
                           {user.isVerified ? (
