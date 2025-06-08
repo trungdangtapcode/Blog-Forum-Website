@@ -261,6 +261,7 @@ export default function AdminPage() {
     );
   }
 
+
   if (!isAdmin) {
     return null; // The useEffect will redirect non-admins
   }
@@ -306,7 +307,11 @@ export default function AdminPage() {
                   ) : (
                     posts.map((post) => (
                       <TableRow key={post._id}>
-                        <TableCell className="font-medium">{post.title}</TableCell>
+                        <TableCell className="font-medium">
+                          <Link href={`posts/${post._id}`}>
+                            {post.title}
+                          </Link>
+                        </TableCell>
                         <TableCell>
                           {typeof post.author === 'string' 
                             ? post.author 

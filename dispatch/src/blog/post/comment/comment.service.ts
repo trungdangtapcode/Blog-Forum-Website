@@ -189,8 +189,8 @@ export class CommentService {
     if (!comment) {
       throw new NotFoundException('Comment not found');
     }
-    
-    if (comment.author.toString() !== userId) {
+
+    if (comment.author.toString() !== userId.toString()){
       throw new ConflictException('You can only edit your own comments');
     }
     
@@ -216,7 +216,7 @@ export class CommentService {
       throw new NotFoundException('Comment not found');
     }
     
-    if (comment.author.toString() !== userId) {
+    if (comment.author.toString() !== userId.toString()) {
       throw new ConflictException('You can only delete your own comments');
     }
     

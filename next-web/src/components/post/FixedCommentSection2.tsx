@@ -40,12 +40,19 @@ const FixedCommentSection: React.FC<CommentSectionProps> = ({ postId }) => {
         setIsAuthenticated(!!token);
         
         if (token) {
-          const session = await auth0Client.getSession();
-          if (session && session.user) {
+          const profileResponse = await fetch('/api/account/profile', {
+            method: 'GET',
+            headers: { 
+              'Content-Type': 'application/json',
+              'ngrok-skip-browser-warning': '69420'
+            }
+          });
+          const profile = await profileResponse.json();
+          if (profile) {
             setCurrentUser({
-              id: session.user.sub || '',
-              name: session.user.name || session.user.nickname || 'User',
-              avatar: session.user.picture || '/default-avatar.png'
+              id: profile._id || '',
+              name: profile.fullName || 'User',
+              avatar: profile.avatar || '/default-avatar.png'
             });
           }
         }

@@ -20,6 +20,17 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { ReplyForm } from "./ReplyForm";
 import { CommentType, UserInfo } from "./types";
 import Link from "next/link";
@@ -57,6 +68,7 @@ export const CommentItem: React.FC<CommentItemProps> = ({
   const [editContent, setEditContent] = useState(comment.content);
 
   const isCommentAuthor = currentUser && comment.author && comment.author._id === currentUser.id;
+  console.log(isCommentAuthor,comment.author?._id, currentUser)
 
   // Start editing a comment
   const startEditing = () => {
@@ -90,17 +102,22 @@ export const CommentItem: React.FC<CommentItemProps> = ({
     setIsReplying(false);
     setReplyContent("");
   };
-
   // Handle submit edit
   const handleSubmitEdit = async () => {
     if (!editContent.trim()) return;
     
-    await onEdit(comment._id, editContent);
-    setIsEditing(false);
+    try {
+      await onEdit(comment._id, editContent);
+      setIsEditing(false);
+    } catch (error) {
+      console.error("Failed to edit comment:", error);
+      // We'll let onEdit handle the toast notifications
+    }
   };
-
   return (
-    <div className={`border-t border-gray-100 dark:border-gray-800 pt-4 ${level > 0 ? 'ml-8' : ''}`}>
+    <div className={`border-t border-gray-100 dark:border-gray-800 pt-4 ${
+      level > 0 ? `ml-${Math.min(level * 4, 12)}` : ''}`}
+    >
       <div className="flex space-x-3">
         <Avatar className="h-10 w-10">
           <AvatarImage src={comment.author?.avatar || "/default-avatar.png"} />
@@ -108,11 +125,17 @@ export const CommentItem: React.FC<CommentItemProps> = ({
         </Avatar>
         
         <div className="flex-1">
-          <div className="flex items-center justify-between">
-            <div>
-              <Link href={`/profile/${comment.author?._id}`} className="font-medium text-sm text-blue-500 hover:underline">
-                {comment.author?.fullName || 'Anonymous User'}
-              </Link>
+          <div className="flex items-center justify-between">            <div>
+              <div className="flex items-center gap-1.5">
+                <Link href={`/profile/${comment.author?._id}`} className="font-medium text-sm text-blue-500 hover:underline">
+                  {comment.author?.fullName || 'Anonymous User'}
+                </Link>
+                {isCommentAuthor && (
+                  <span className="px-1.5 py-0.5 rounded-full text-[10px] bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300">
+                    You
+                  </span>
+                )}
+              </div>
               
               <span className="text-xs text-gray-500 dark:text-gray-400">
                 {formatDistanceToNowSimple(new Date(comment.createdAt))}
@@ -128,47 +151,76 @@ export const CommentItem: React.FC<CommentItemProps> = ({
                   <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
                     <MoreVertical className="h-4 w-4" />
                   </Button>
-                </DropdownMenuTrigger>
+                </DropdownMenuTrigger>                
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem onClick={startEditing} className="cursor-pointer">
                     <Edit className="mr-2 h-4 w-4" />
                     Edit
                   </DropdownMenuItem>
-                  <DropdownMenuItem 
-                    onClick={() => onDelete(comment._id)} 
-                    className="cursor-pointer text-red-500"
-                  >
-                    <Trash2 className="mr-2 h-4 w-4" />
-                    Delete
-                  </DropdownMenuItem>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <DropdownMenuItem
+                        onSelect={(e) => e.preventDefault()}
+                        className="cursor-pointer text-red-500"
+                      >
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        Delete
+                      </DropdownMenuItem>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This will permanently delete this comment and cannot be undone.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={() => onDelete(comment._id)}
+                          className="bg-red-600 hover:bg-red-700"
+                        >
+                          Delete
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
                 </DropdownMenuContent>
               </DropdownMenu>
             )}
           </div>
-          
-          {isEditing ? (
-            <div className="mt-2">
+            {isEditing ? (
+            <div className="mt-2 border rounded-md p-3 bg-gray-50 dark:bg-gray-800">
               <Textarea
                 value={editContent}
                 onChange={(e) => setEditContent(e.target.value)}
                 placeholder="Edit your comment..."
-                className="min-h-[100px] mb-2"
+                className="min-h-[100px] mb-2 focus:ring-2 focus:ring-blue-500"
+                autoFocus
               />
-              <div className="flex gap-2">
-                <Button 
-                  onClick={handleSubmitEdit} 
-                  disabled={!editContent.trim() || submitting}
-                  size="sm"
-                >
-                  {submitting && <Loader2 className="mr-2 h-3 w-3 animate-spin" />}
-                  Save
-                </Button>
+              <div className="flex gap-2 justify-end">
                 <Button 
                   onClick={cancelEditing} 
                   variant="outline" 
                   size="sm"
+                  className="transition-all duration-200"
                 >
                   Cancel
+                </Button>
+                <Button 
+                  onClick={handleSubmitEdit} 
+                  disabled={!editContent.trim() || submitting}
+                  size="sm"
+                  className="transition-all duration-200"
+                >
+                  {submitting ? (
+                    <>
+                      <Loader2 className="mr-2 h-3 w-3 animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    "Save Changes"
+                  )}
                 </Button>
               </div>
             </div>

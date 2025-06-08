@@ -56,9 +56,8 @@ export const CommentList: React.FC<CommentListProps> = ({
       </div>
     );
   }
-
   return (
-    <>
+    <div className="space-y-6">
       {comments.map(comment => (
         <CommentItem
           key={comment._id}
@@ -74,6 +73,6 @@ export const CommentList: React.FC<CommentListProps> = ({
           submitting={submitting}
         />
       ))}
-    </>
+    </div>
   );
 };
