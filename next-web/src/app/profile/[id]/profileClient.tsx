@@ -16,6 +16,7 @@ import toast, { Toaster } from 'react-hot-toast';
 import { auth0Client } from "@/lib/auth0-client";
 import { sendMessage } from "@/utils/messagesApi";
 import { useRouter } from "next/navigation";
+import { CreditTransferButton } from "@/components/ui/credit-transfer-button";
 
 interface AccountPublicProfile {
   _id: string;
@@ -28,6 +29,7 @@ interface AccountPublicProfile {
   occupation?: string;
   joinedDate?: Date | string;
   isVerified?: boolean;
+  credit?: number;
 }
 
 interface User {
@@ -264,8 +266,7 @@ const ProfilePageClient = ({ params }: ProfilePageClientProps) => {
                   <strong>{posts.length}</strong> posts
                 </span>
               </div>
-              
-              <div className="flex flex-wrap gap-3 text-gray-600 dark:text-gray-400 mb-3">
+                <div className="flex flex-wrap gap-3 text-gray-600 dark:text-gray-400 mb-3">
                 {profile.location && (
                   <div className="flex items-center">
                     <MapPin className="h-4 w-4 mr-1" />
@@ -279,11 +280,21 @@ const ProfilePageClient = ({ params }: ProfilePageClientProps) => {
                     <span>{profile.occupation}</span>
                   </div>
                 )}
+                
+                {profile.credit !== undefined && (
+                  <div className="flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1">
+                      <circle cx="12" cy="12" r="10"></circle>
+                      <path d="M8 12h8"></path>
+                      <path d="M12 8v8"></path>
+                    </svg>
+                    <span>{profile.credit} credits</span>
+                  </div>
+                )}
               </div>
             </div>
               {/* Profile action buttons - only show if user is logged in and viewing someone else's profile */}
-            {user && !userLoading && user.sub !== profile._id && (
-              <div className="flex space-x-2">
+            {user && !userLoading && user.sub !== profile._id && (              <div className="flex space-x-2">
                 <Button
                   onClick={handleFollowToggle}
                   disabled={isFollowLoading}
@@ -314,6 +325,12 @@ const ProfilePageClient = ({ params }: ProfilePageClientProps) => {
                   <MessageCircle className="h-4 w-4 mr-2" />
                   Message
                 </Button>
+
+                {/* Credit Transfer Button */}
+                <CreditTransferButton 
+                  recipientId={profile._id}
+                  recipientName={profile.fullName || profile.email || 'this user'}
+                />
               </div>
             )}
           </div>

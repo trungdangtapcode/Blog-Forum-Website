@@ -214,6 +214,11 @@ blog_forum_project/
 ### Admin Dashboard
 ![Admin Interface](./next-web/public/showcase/example_admin_page.png)
 
+### Account Dashboard
+
+### Credit System
+
+
 ## 🤝 Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.

@@ -42,6 +42,7 @@ import toast, { Toaster } from "react-hot-toast";
 import { Loader2, CheckCircle, XCircle, Trash2, Mail } from "lucide-react";
 import { auth0Client } from "@/lib/auth0-client";
 import Link from 'next/link';
+import CreditAdminPanel from '@/components/admin/credit-admin-panel';
 
 interface PostData {
   _id: string;
@@ -269,11 +270,11 @@ export default function AdminPage() {
     <div className="container mx-auto py-10 px-4">
       <Toaster position="top-right" toastOptions={{ duration: 4000 }} />
       <h1 className="text-3xl font-bold mb-8">Admin Dashboard</h1>
-      
-      <Tabs defaultValue="posts" className="w-full">
-        <TabsList className="grid grid-cols-2 w-full max-w-md mb-8">
-          <TabsTrigger value="posts">Posts Management</TabsTrigger>
+        <Tabs defaultValue="posts" className="w-full">
+        <TabsList className="grid grid-cols-3 w-full max-w-md mb-8">          <TabsTrigger value="posts">Posts Management</TabsTrigger>
           <TabsTrigger value="users">User Management</TabsTrigger>
+          <TabsTrigger value="credits">Credits</TabsTrigger>
+          <TabsTrigger value="settings">Settings</TabsTrigger>
         </TabsList>
         
         <TabsContent value="posts">
@@ -497,7 +498,10 @@ export default function AdminPage() {
                 </TableBody>
               </Table>
             </CardContent>
-          </Card>
+          </Card>        </TabsContent>
+        
+        <TabsContent value="credits">
+          <CreditAdminPanel />
         </TabsContent>
       </Tabs>
     </div>

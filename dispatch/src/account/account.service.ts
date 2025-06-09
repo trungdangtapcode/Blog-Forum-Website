@@ -338,4 +338,52 @@ export class AccountService {
             }))
         };
     }
+
+	async transferCredit(senderEmail: string, recipientId: string, amount: number) {
+		// Validate input
+		if (amount <= 0) {
+			throw new ConflictException('Transfer amount must be positive');
+		}
+
+		try {
+			// Get sender's profile
+			const senderProfile = await this.getProfile(senderEmail);
+
+			if (!senderProfile) {
+				throw new NotFoundException('Sender profile not found');
+			}
+
+			// Check if sender has enough credit
+			if (senderProfile.credit < amount) {
+				throw new ConflictException('Insufficient credit');
+			}
+
+			// Get recipient's profile
+			const recipientProfile = await this.profileModel.findById(recipientId).exec();
+
+			if (!recipientProfile) {
+				throw new NotFoundException('Recipient profile not found');
+			}
+
+			// Perform the transfer
+			await this.profileModel.updateOne(
+				{ _id: senderProfile._id },
+				{ $inc: { credit: -amount } }
+			);
+
+			await this.profileModel.updateOne(
+				{ _id: recipientProfile._id },
+				{ $inc: { credit: amount } }
+			);
+
+			return {
+				success: true,
+				message: `Successfully transferred ${amount} credit to ${recipientProfile.fullName || recipientProfile.email}`,
+				senderCreditRemaining: senderProfile.credit - amount
+			};
+		} catch (error) {
+			Logger.error('Error transferring credit', error.stack, 'AccountService');
+			throw error;
+		}
+	}
 }

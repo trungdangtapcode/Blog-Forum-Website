@@ -15,6 +15,8 @@ interface AccountProfile {
   age: number;
   location: string;
   occupation: string;
+  credit: number;
+  _id: string;
 }
 
 interface ProfilePageClientProps {

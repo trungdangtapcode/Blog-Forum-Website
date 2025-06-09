@@ -14,6 +14,18 @@ export const auth0Client = {
       return null;
     } catch (error) {
       console.error('Error getting auth token:', error);
+      
+      // Handle token expiration by redirecting to login
+      if (error.response && 
+          (error.response.status === 401 || error.response.status === 403) &&
+          error.response.data?.code === 'token_expired') {
+        
+        console.log('Token expired, redirecting to login...');
+        // Use window.location instead of router for a hard refresh
+        window.location.href = `/auth/login?returnTo=${encodeURIComponent(window.location.pathname)}`;
+        return null;
+      }
+      
       return null;
     }
   },
@@ -28,6 +40,18 @@ export const auth0Client = {
       return null;
     } catch (error) {
       console.error('Error getting session:', error);
+      
+      // Handle session expiration
+      if (error.response && 
+          (error.response.status === 401 || error.response.status === 403)) {
+        // Only redirect if we're not already on the login page or a public page
+        const currentPath = typeof window !== 'undefined' ? window.location.pathname : '';
+        if (!currentPath.startsWith('/auth') && !currentPath.startsWith('/landing') && currentPath !== '/') {
+          console.log('Session expired, redirecting to login...');
+          window.location.href = `/auth/login?returnTo=${encodeURIComponent(currentPath)}`;
+        }
+      }
+      
       return null;
     }
   }

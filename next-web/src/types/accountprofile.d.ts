@@ -7,6 +7,7 @@ interface AccountProfile {
 	location: string;
 	occupation: string;
 	_id: string;
+	credit: number;
 	isVerified?: boolean;
 	isAdmin?: boolean;
 	savedPosts?: string[];

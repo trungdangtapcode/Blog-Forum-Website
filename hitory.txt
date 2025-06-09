@@ -59,6 +59,10 @@ ui/accordion
 
 SplashScreen
 
+npm install mongoose-erd-generator -g
+
+@nestjs/schedule
+
 =======================
 
 git ls-files | awk '{

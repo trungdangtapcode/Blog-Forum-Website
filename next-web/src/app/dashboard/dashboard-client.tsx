@@ -78,8 +78,7 @@ const DashboardClient: FC<DashboardClientProps> = ({
               </Avatar>
             </div>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
+          <CardContent>              <div className="space-y-4">
               {profile.bio && (
                 <div>
                   <p className="text-sm text-muted-foreground mb-1">Bio</p>
@@ -97,6 +96,16 @@ const DashboardClient: FC<DashboardClientProps> = ({
                   <div className="flex items-center gap-2 text-sm">
                     <Pencil className="h-4 w-4" />
                     <span>{profile.occupation}</span>
+                  </div>
+                )}
+                {profile.credit !== undefined && (
+                  <div className="flex items-center gap-2 text-sm font-semibold text-green-600 dark:text-green-400">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+                      <circle cx="12" cy="12" r="10"></circle>
+                      <path d="M8 12h8"></path>
+                      <path d="M12 8v8"></path>
+                    </svg>
+                    <span>{profile.credit} credits</span>
                   </div>
                 )}
               </div>

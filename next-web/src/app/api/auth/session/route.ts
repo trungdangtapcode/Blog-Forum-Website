@@ -19,6 +19,21 @@ export async function GET() {
     });
   } catch (error) {
     console.error("Error in session API route:", error);
+    
+    // Handle token expiration
+    const err = error as { code?: string; message?: string; cause?: { code?: string } };
+    
+    if (err?.code === 'ERR_JWT_EXPIRED' || 
+        (err?.message && err.message.includes('jwt expired')) ||
+        (err?.cause?.code === 'ERR_JWT_EXPIRED')) {
+      
+      return NextResponse.json({ 
+        authenticated: false, 
+        error: "Token expired",
+        code: "token_expired" 
+      }, { status: 401 });
+    }
+    
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

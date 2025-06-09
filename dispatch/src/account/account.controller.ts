@@ -1,13 +1,17 @@
-import {Body, Controller, Delete, Get, Post, Req, UseFilters, UseGuards, UsePipes, ValidationPipe, Param} from '@nestjs/common';
+import {Body, Controller, Delete, Get, Post, Req, UseFilters, UseGuards, UsePipes, ValidationPipe, Param, Patch} from '@nestjs/common';
 import { AccountService } from './account.service';
 import { CachedAuth0Guard } from './guards/cached-auth0.guard';
 import { AuthGuard } from '@nestjs/passport';
 import { UpdateProfileDto } from './dto/UpdateProfile.dto';
 import { AccountProfile } from './accountProfile.chema';
+import { CreditService } from './credit.service';
 
 @Controller('account')
 export class AccountController {
-	constructor(private AccountService: AccountService) {}
+	constructor(
+		private AccountService: AccountService,
+		private creditService: CreditService
+	) {}
 	
 	@Get("/getAllProfiles")
 	@UseGuards(CachedAuth0Guard)
@@ -172,5 +176,41 @@ export class AccountController {
 		const profile: AccountProfile = await this.AccountService.getProfile(email);
 		const userId = profile._id as string;
 		return this.AccountService.getFollowers(userId);
+	}
+
+	@Get("/credit")
+	@UseGuards(CachedAuth0Guard)
+	async getUserCredit(@Req() req: Request & { user: any }) {
+		const email = req.user.email;
+		const profile: AccountProfile = await this.AccountService.getProfile(email);
+		return { credit: profile.credit };
+	}
+
+	@Post("/credit/transfer/:recipientId")
+	@UseGuards(CachedAuth0Guard)
+	async transferCredit(
+		@Req() req: Request & { user: any },
+		@Param('recipientId') recipientId: string,
+		@Body() body: { amount: number }
+	) {
+		const email = req.user.email;
+		return this.AccountService.transferCredit(email, recipientId, body.amount);
+	}
+
+	@Patch("/credit/distribution-interval")
+	@UseGuards(CachedAuth0Guard)
+	async updateCreditDistributionInterval(
+		@Req() req: Request & { user: any },
+		@Body() body: { interval: string }
+	) {
+		const email = req.user.email;
+		const profile = await this.AccountService.getProfile(email);
+		
+		// Ensure user is admin
+		if (!profile.isAdmin) {
+			return { error: 'Unauthorized - Admin access required' };
+		}
+		
+		return this.creditService.setDistributionInterval(body.interval);
 	}
 }

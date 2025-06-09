@@ -11,7 +11,8 @@ const tmp = {
     age: 30,
     location: 'New York, NY',
     occupation: 'Software Engineer',
-    _id: "123456"
+    _id: "123456",
+    credit: 69
 }
 const initialState: AccountState = {
   profile: tmp,

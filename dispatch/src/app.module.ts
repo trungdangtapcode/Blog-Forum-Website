@@ -12,13 +12,15 @@ import { MailerModule } from './mailer/mailer.module';
 import { MessageModule } from './message/message.module';
 import { SearchModule } from './search/search.module';
 import { TextToSpeechModule } from './blog/text-to-speech/text-to-speech.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({  
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
       expandVariables: true, //${}
-    }),    
+    }),
+    ScheduleModule.forRoot(),
     CacheModule.register({
       isGlobal: true,
       // Use memory store in development and Redis in production

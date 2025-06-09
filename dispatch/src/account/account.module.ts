@@ -13,6 +13,7 @@ import { Notification, NotificationSchema } from './notification.schema';
 import { NotificationService } from './notification.service';
 import { NotificationController } from './notification.controller';
 import { MailerModule } from '../mailer/mailer.module';
+import { CreditService } from './credit.service';
 
 //account ~ profile ~ user
 @Module({    
@@ -37,13 +38,12 @@ import { MailerModule } from '../mailer/mailer.module';
             }
         ]),        JwtModule.register({}),
         // Import MailerModule to make MailerService available in this module
-        forwardRef(() => MailerModule)
-    ],providers:[
-        AccountService, Auth0Strategy, CachedAuth0Guard, NotificationService
+        forwardRef(() => MailerModule)    ],providers:[
+        AccountService, Auth0Strategy, CachedAuth0Guard, NotificationService, CreditService
     ]
     ,    
     controllers: [AccountController, NotificationController],
-    exports: [AccountService, CachedAuth0Guard, NotificationService, MongooseModule] // Export MongooseModule to make NotificationModel available
+    exports: [AccountService, CachedAuth0Guard, NotificationService, CreditService, MongooseModule] // Export MongooseModule to make models available
 })
 
 export class AccountModule {};
