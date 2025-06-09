@@ -64,9 +64,22 @@ export function MessagesList() {
       } catch (e) {
         console.error('Failed to parse accountProfile:', e);
       }
+      setCurrentUserId(id);
+    } else {
+      // fetch from /api/profile to get id
+      fetch('/api/account/profile')
+        .then(response => response.json())
+        .then(data => {
+          id = data._id;
+          setCurrentUserId(id);
+          console.log('Fetched current user ID:', id);
+          localStorage.setItem('accountProfile', JSON.stringify(data));
+        })
+      .catch(error => console.error('Failed to fetch profile:', error));
     }
+    // console.log('acccount string:',accountProfileStr)
+    // console.error('acccount string:',accountProfileStr)
     
-    setCurrentUserId(id);
 
     
     loadConversations();
@@ -111,10 +124,12 @@ export function MessagesList() {
     setLoading(true);
     try {
       if (index!=-1){
+        // console.log('message current index:',index);
         setCurrentAvatar(arrayAvatar[index] || '/default-avatar.png');
         setCurrentName(arrayName[index] || 'Unknown User');
       } else {
         const profile = await getPublicProfile(userId);
+        // console.log('message your profile:', profile)
         setCurrentAvatar(profile.avatar || '/default-avatar.png');
         setCurrentName(profile.fullName || 'Unknown User');
       }
