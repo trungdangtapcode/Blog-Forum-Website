@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { updateCreditDistributionInterval } from '@/utils/creditApi';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -17,12 +16,17 @@ const intervals = [
 export default function CreditAdminPanel() {
   const [selectedInterval, setSelectedInterval] = useState('0 * * * *');
   const [isUpdating, setIsUpdating] = useState(false);
-
   const handleUpdateInterval = async () => {
     setIsUpdating(true);
     try {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const result = await updateCreditDistributionInterval(selectedInterval);
+      await fetch('/api/account/credit/distribution-interval', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ interval: selectedInterval }),
+      });
+      
       toast.success('Credit distribution interval updated successfully');
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Failed to update interval');

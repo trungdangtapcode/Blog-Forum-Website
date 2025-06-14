@@ -178,6 +178,25 @@ export class AccountController {
 		return this.AccountService.getFollowers(userId);
 	}
 
+	@Patch("/credit/:userId")
+	@UsePipes(new ValidationPipe())
+	@UseGuards(CachedAuth0Guard)
+	async updateUserCredit(
+		@Req() req: Request & { user: any },
+		@Param('userId') userId: string,
+		@Body() body: { amount: number }
+	) {
+		const email = req.user.email;
+		
+		// Check if user is admin
+		const profile = await this.AccountService.getProfile(email);
+		if (!profile.isAdmin) {
+			return { error: 'Unauthorized - Admin access required' };
+		}
+		
+		return this.AccountService.updateUserCredit(userId, body.amount);
+	}
+
 	@Get("/credit")
 	@UseGuards(CachedAuth0Guard)
 	async getUserCredit(@Req() req: Request & { user: any }) {

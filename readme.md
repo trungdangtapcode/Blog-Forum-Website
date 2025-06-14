@@ -69,6 +69,7 @@ The project follows a modern microservices architecture:
 - **Tailwind CSS**: Utility-first CSS framework
 - **Shadcn UI**: Component library
 - **Framer Motion**: Animations and transitions
+- **Auth0**: Authencication Token-based + Oauth 2.0
 
 ### Backend
 - **NestJS**: Progressive Node.js framework

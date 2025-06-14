@@ -6,6 +6,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Table,
   TableBody,
   TableCaption,
@@ -43,6 +50,7 @@ import { Loader2, CheckCircle, XCircle, Trash2, Mail } from "lucide-react";
 import { auth0Client } from "@/lib/auth0-client";
 import Link from 'next/link';
 import CreditAdminPanel from '@/components/admin/credit-admin-panel';
+import CreditManager from '@/components/admin/credit-manager';
 
 interface PostData {
   _id: string;
@@ -63,6 +71,7 @@ interface UserData {
   fullName: string;
   isVerified: boolean;
   isAdmin: boolean;
+  credit: number;
 }
 
 export default function AdminPage() {
@@ -146,7 +155,8 @@ export default function AdminPage() {
       }
       
       const data = await response.json();
-      setUsers(data);    } catch (error) {
+      setUsers(data);    
+    } catch (error) {
       console.error('Error fetching users:', error);
       toast.error("Failed to fetch user accounts.");
     }
@@ -265,16 +275,17 @@ export default function AdminPage() {
 
   if (!isAdmin) {
     return null; // The useEffect will redirect non-admins
-  }
-  return (
+  }  return (
     <div className="container mx-auto py-10 px-4">
       <Toaster position="top-right" toastOptions={{ duration: 4000 }} />
-      <h1 className="text-3xl font-bold mb-8">Admin Dashboard</h1>
-        <Tabs defaultValue="posts" className="w-full">
-        <TabsList className="grid grid-cols-3 w-full max-w-md mb-8">          <TabsTrigger value="posts">Posts Management</TabsTrigger>
-          <TabsTrigger value="users">User Management</TabsTrigger>
-          <TabsTrigger value="credits">Credits</TabsTrigger>
-          <TabsTrigger value="settings">Settings</TabsTrigger>
+      <h1 className="text-3xl font-bold mb-2">Admin Dashboard</h1>
+      <p className="text-gray-500 mb-8">Manage posts, users, and credit distribution settings</p>
+      <Tabs defaultValue="posts" className="w-full">     
+        <TabsList className="grid grid-cols-4 w-full mb-8">
+          <TabsTrigger value="posts" className="w-full">Posts Management</TabsTrigger>
+          <TabsTrigger value="users" className="w-full">User Management</TabsTrigger>
+          <TabsTrigger value="credits" className="w-full">Credits</TabsTrigger>
+          <TabsTrigger value="settings" className="w-full">Settings</TabsTrigger>
         </TabsList>
         
         <TabsContent value="posts">
@@ -388,11 +399,12 @@ export default function AdminPage() {
               <Table>
                 <TableCaption>A list of all users on the platform.</TableCaption>
                 <TableHeader>
-                  <TableRow>
+                  <TableRow>                    
                     <TableHead>Name</TableHead>
                     <TableHead>Email</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Role</TableHead>
+                    <TableHead>Credits</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -418,13 +430,17 @@ export default function AdminPage() {
                           ) : (
                             <Badge variant="outline">Unverified</Badge>
                           )}
-                        </TableCell>
-                        <TableCell>
+                        </TableCell>                        <TableCell>
                           {user.isAdmin ? (
                             <Badge variant="secondary">Admin</Badge>
                           ) : (
                             <Badge variant="outline">User</Badge>
                           )}
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline" className="bg-slate-100">
+                            {user.credit !== undefined ? `${user.credit} credits` : 'N/A'}
+                          </Badge>
                         </TableCell>
                         <TableCell className="text-right space-x-2">
                           {user.isVerified ? (
@@ -498,10 +514,75 @@ export default function AdminPage() {
                 </TableBody>
               </Table>
             </CardContent>
-          </Card>        </TabsContent>
+          </Card>        </TabsContent>          <TabsContent value="credits">
+          <div className="space-y-6">
+            <CreditAdminPanel />
+            <CreditManager users={users} />
+          </div>
+        </TabsContent>
         
-        <TabsContent value="credits">
-          <CreditAdminPanel />
+        <TabsContent value="settings">
+          <Card>
+            <CardHeader>
+              <CardTitle>Platform Settings</CardTitle>
+              <CardDescription>
+                Configure global settings for the blog forum platform
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid gap-6">
+                <div>
+                  <h3 className="text-lg font-medium mb-2">Platform Information</h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="platform-name">Platform Name</Label>
+                      <Input id="platform-name" defaultValue="Blog Forum" />
+                    </div>
+                    <div>
+                      <Label htmlFor="platform-url">Website URL</Label>
+                      <Input id="platform-url" defaultValue="https://blogforum.example.com" />
+                    </div>
+                  </div>
+                </div>
+                
+                <div>
+                  <h3 className="text-lg font-medium mb-2">Default User Settings</h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="default-credits">Default Credits for New Users</Label>
+                      <Input id="default-credits" type="number" defaultValue="10" />
+                    </div>
+                    <div className="flex items-end gap-2">
+                      <Button>Update Settings</Button>
+                    </div>
+                  </div>
+                  <p className="text-sm text-muted-foreground mt-2">
+                    Note: Changes to default settings will only affect new users.
+                  </p>
+                </div>
+                
+                <div>
+                  <h3 className="text-lg font-medium mb-2">Content Moderation</h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="col-span-2">
+                      <Label htmlFor="content-filter">Auto-Moderation Filter Strength</Label>
+                      <Select>
+                        <SelectTrigger id="content-filter">
+                          <SelectValue placeholder="Select filter strength" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="disabled">Disabled</SelectItem>
+                          <SelectItem value="low">Low</SelectItem>
+                          <SelectItem value="medium">Medium</SelectItem>
+                          <SelectItem value="high">High</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
     </div>

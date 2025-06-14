@@ -7,7 +7,7 @@ import React, { useEffect } from 'react'
 import { Button } from './ui/button'
 
 
-import { Bell, MessageCircle, Home } from "lucide-react";
+import { Bell, MessageCircle, Home, ShieldCheck } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -163,9 +163,10 @@ const LogginedMenu = ({accountProfile}: {accountProfile?: AccountProfile}) => {
           <DropdownMenuSeparator className="bg-primary-200" />
           <DropdownMenuItem
             className="cursor-pointer hover:!bg-primary-700 hover:!text-primary-100"
-            onClick={() => router.push('/settings')}
+            onClick={() => router.push('/admin')}
           >
             Settings
+            <ShieldCheck className="h-6 w-6" />
           </DropdownMenuItem>
           <DropdownMenuItem
             className="cursor-pointer hover:!bg-primary-700 hover:!text-primary-100"

@@ -379,10 +379,36 @@ export class AccountService {
 			return {
 				success: true,
 				message: `Successfully transferred ${amount} credit to ${recipientProfile.fullName || recipientProfile.email}`,
-				senderCreditRemaining: senderProfile.credit - amount
+				senderCredit: senderProfile.credit - amount
 			};
 		} catch (error) {
-			Logger.error('Error transferring credit', error.stack, 'AccountService');
+			throw error;
+		}
+	}
+
+	// Admin method to update user credit directly
+	async updateUserCredit(userId: string, amount: number) {
+		try {
+			// Find the user profile
+			const userProfile = await this.profileModel.findById(userId).exec();
+			
+			if (!userProfile) {
+				throw new NotFoundException('User profile not found');
+			}
+			
+			// Update the user's credit to the specified amount
+			await this.profileModel.updateOne(
+				{ _id: userId },
+				{ $set: { credit: amount } }
+			);
+			
+			return {
+				success: true,
+				message: `Successfully updated credit for ${userProfile.fullName || userProfile.email} to ${amount}`,
+				userId: userId,
+				newCreditAmount: amount
+			};
+		} catch (error) {
 			throw error;
 		}
 	}
