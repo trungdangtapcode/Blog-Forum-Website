@@ -1,0 +1,55 @@
+import { Injectable, CanActivate, ExecutionContext, UnauthorizedException, Logger } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { AccountProfile } from '../accountProfile.chema';
+import { CachedAuth0Guard } from './cached-auth0.guard';
+
+@Injectable()
+export class AdminGuard implements CanActivate {
+  private readonly logger = new Logger('AdminGuard');
+  
+  constructor(
+    @InjectModel(AccountProfile.name) 
+    private profileModel: Model<AccountProfile>,
+    private cachedAuth0Guard: CachedAuth0Guard
+  ) {}
+  
+  async canActivate(context: ExecutionContext): Promise<boolean> {
+    // First use the CachedAuth0Guard to authenticate the user
+    const isAuthenticated = await this.cachedAuth0Guard.canActivate(context);
+    
+    if (!isAuthenticated) {
+      return false; // The CachedAuth0Guard will throw an exception if auth fails
+    }
+    
+    // If we're here, the user is authenticated and user data is attached to the request
+    const request = context.switchToHttp().getRequest();
+    const user = request.user;
+    
+    if (!user || !user.email) {
+      this.logger.error('User object or email missing in request after authentication');
+      throw new UnauthorizedException('User not found or email missing');
+    }
+    
+    try {
+      // Get the user profile by email, consistent with AccountController
+      const profile = await this.profileModel.findOne({ email: user.email }).exec();
+      
+      if (!profile) {
+        this.logger.error(`Profile not found for email: ${user.email}`);
+        throw new UnauthorizedException('User profile not found');
+      }
+      
+      if (!profile.isAdmin) {
+        this.logger.warn(`User ${user.email} attempted to access admin resource but is not an admin`);
+        throw new UnauthorizedException('Admin access required');
+      }
+      
+      this.logger.log(`Admin access granted for user: ${user.email}`);
+      return true;
+    } catch (error) {
+      this.logger.error(`Error in admin authorization: ${error.message}`);
+      throw new UnauthorizedException('Admin authorization failed');
+    }
+  }
+}

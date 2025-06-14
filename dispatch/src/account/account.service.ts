@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException, Inject, Logger, ConflictException, NotFoundException } from "@nestjs/common";
+import { Injectable, UnauthorizedException, Inject, Logger, ConflictException, NotFoundException, BadRequestException } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model } from "mongoose";
 import { JwtService } from "@nestjs/jwt";
@@ -407,6 +407,39 @@ export class AccountService {
 				message: `Successfully updated credit for ${userProfile.fullName || userProfile.email} to ${amount}`,
 				userId: userId,
 				newCreditAmount: amount
+			};
+		} catch (error) {
+			throw error;
+		}
+	}
+
+	// Add credits to user account (for purchases)
+	async addCredits(userId: string, amount: number) {
+		if (amount <= 0) {
+			throw new BadRequestException('Credit amount must be positive');
+		}
+
+		try {
+			// Find the user profile
+			const userProfile = await this.profileModel.findById(userId).exec();
+			
+			if (!userProfile) {
+				throw new NotFoundException('User profile not found');
+			}
+			
+			// Add credits to the user's account
+			await this.profileModel.updateOne(
+				{ _id: userId },
+				{ $inc: { credit: amount } }
+			);
+			
+			const updatedProfile = await this.profileModel.findById(userId).exec();
+			
+			return {
+				success: true,
+				message: `Successfully added ${amount} credits to account`,
+				userId: userId,
+				newCreditAmount: updatedProfile.credit
 			};
 		} catch (error) {
 			throw error;

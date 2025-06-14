@@ -13,6 +13,7 @@ import { MessageModule } from './message/message.module';
 import { SearchModule } from './search/search.module';
 import { TextToSpeechModule } from './blog/text-to-speech/text-to-speech.module';
 import { ScheduleModule } from '@nestjs/schedule';
+import { PaymentModule } from './payment/payment.module';
 
 @Module({  
   imports: [
@@ -42,6 +43,7 @@ import { ScheduleModule } from '@nestjs/schedule';
     MailerModule,
     MessageModule,
     SearchModule,
+    PaymentModule,
     MongooseModule.forRoot(process.env.MONGO_URI),
     TextToSpeechModule, // Assuming TextToSpeechModule is defined in the same directory
   ],
