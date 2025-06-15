@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Table,
@@ -12,7 +13,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { useToast } from '@/components/ui/use-toast';
+import toast, { Toaster } from 'react-hot-toast';
 import { Loader2, RefreshCw, AlertCircle, CheckCircle, XCircle } from 'lucide-react';
 
 interface PaymentTransaction {
@@ -37,7 +38,6 @@ export default function AdminPayments() {
   const [retrying, setRetrying] = useState<boolean>(false);
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
   const [checkingAdmin, setCheckingAdmin] = useState<boolean>(true);
-  const { toast } = useToast();
 
   useEffect(() => {
     // Check if the user is an admin
@@ -75,13 +75,8 @@ export default function AdminPayments() {
         throw new Error('Failed to fetch transactions');
       }
       const data = await response.json();
-      setTransactions(data);
-    } catch (error) {
-      toast({
-        title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to fetch transactions',
-        variant: 'destructive',
-      });
+      setTransactions(data);    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Failed to fetch transactions');
     } finally {
       setLoading(false);
     }
@@ -95,22 +90,13 @@ export default function AdminPayments() {
       });
       if (!response.ok) {
         throw new Error('Failed to retry credit additions');
-      }
-      const data = await response.json();
+      }      const data = await response.json();
       
-      toast({
-        title: 'Success',
-        description: `${data.message}. ${data.count} transaction(s) updated.`,
-      });
+      toast.success(`${data.message}. ${data.count} transaction(s) updated.`);
       
       // Refresh transactions after retry
-      fetchAllTransactions();
-    } catch (error) {
-      toast({
-        title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to retry credit additions',
-        variant: 'destructive',
-      });
+      fetchAllTransactions();    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Failed to retry credit additions');
     } finally {
       setRetrying(false);
     }
@@ -149,11 +135,10 @@ export default function AdminPayments() {
   };
 
   if (!isAdmin) {
-    return (
-      <div className="flex flex-col items-center justify-center py-10">
+    return (      <div className="flex flex-col items-center justify-center py-10">
         <AlertCircle className="w-16 h-16 text-red-500 mb-4" />
         <h1 className="text-2xl font-bold">Access Denied</h1>
-        <p className="text-gray-500">You don't have permission to view this page.</p>
+        <p className="text-gray-500">You don&apos;t have permission to view this page.</p>
       </div>
     );
   }
@@ -228,8 +213,8 @@ export default function AdminPayments() {
               </div>
             )}
           </CardContent>
-        </Card>
-      </div>
+        </Card>      </div>
+      <Toaster />
     </div>
   );
 }

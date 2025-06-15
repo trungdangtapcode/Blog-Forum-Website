@@ -5,9 +5,11 @@ const DISPATCH_URL = process.env.NEXT_PUBLIC_DISPATCH_URL || 'http://localhost:3
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { orderId: string } }
+  context: { params: { orderId: string } }
 ) {
   try {
+    // Await the params to ensure they're fully resolved
+    const params = await context.params;
     const orderId = params.orderId;
 
     const session = await auth0.getSession();
@@ -30,6 +32,7 @@ export async function GET(
 
     if (!response.ok) {
       const errorData = await response.json();
+      console.log('ErrorData in route check-status:', errorData);
       return NextResponse.json(
         { error: errorData.message || errorData.error || 'Failed to check payment status' },
         { status: response.status }
@@ -37,6 +40,7 @@ export async function GET(
     }
 
     const data = await response.json();
+    console.log('Payment status data:', data);
     return NextResponse.json(data);
   } catch (error) {
     console.error('Error checking payment status:', error);

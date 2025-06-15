@@ -1,0 +1,452 @@
+'use client';
+
+import { useState, useEffect, useRef } from 'react';
+import { createCreditPurchase, checkPaymentStatus, getTransactionHistory } from '@/utils/paymentApi';
+import { getCurrentUserProfile } from '@/utils/accountApi';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Separator } from '@/components/ui/separator';
+import { Label } from '@/components/ui/label';
+import { useToast } from '@/components/ui/use-toast';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { AlertCircle, Loader2, CreditCard, Check, X, RefreshCw } from 'lucide-react';
+
+interface Transaction {
+  _id: string;
+  orderId: string;
+  userId: string;
+  userEmail: string;
+  amount: number;
+  creditAmount: number;
+  status: 'pending' | 'success' | 'failed';
+  paymentUrl?: string;
+  paidAt?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export default function BuyCredits() {
+  const [creditAmount, setCreditAmount] = useState<number>(1);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [paymentUrl, setPaymentUrl] = useState<string | null>(null);
+  const [orderId, setOrderId] = useState<string | null>(null);
+  const [checkingStatus, setCheckingStatus] = useState<boolean>(false);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [loadingTransactions, setLoadingTransactions] = useState<boolean>(false);
+  const [userProfile, setUserProfile] = useState<any>(null);
+  const [loadingProfile, setLoadingProfile] = useState<boolean>(true);
+  const [paymentDialogOpen, setPaymentDialogOpen] = useState<boolean>(false);
+  const [paymentStatus, setPaymentStatus] = useState<'pending' | 'success' | 'failed' | null>(null);
+  const [autoCheckActive, setAutoCheckActive] = useState<boolean>(false);
+  
+  const statusCheckInterval = useRef<NodeJS.Timeout | null>(null);
+  const { toast } = useToast();
+  
+  // Load user profile to display current credit balance
+  useEffect(() => {
+    async function loadProfile() {
+      try {
+        setLoadingProfile(true);
+        const profile = await getCurrentUserProfile();
+        setUserProfile(profile);
+      } catch (error) {
+        toast({
+          title: 'Error',
+          description: error instanceof Error ? error.message : 'Failed to load profile',
+          variant: 'destructive',
+        });
+      } finally {
+        setLoadingProfile(false);
+      }
+    }
+    
+    loadProfile();
+  }, [toast]);
+
+  // Clean up interval when component unmounts or dialog closes
+  useEffect(() => {
+    return () => {
+      if (statusCheckInterval.current) {
+        clearInterval(statusCheckInterval.current);
+      }
+    };
+  }, []);
+
+  // Start auto-checking when payment dialog is opened
+  useEffect(() => {
+    if (paymentDialogOpen && orderId && autoCheckActive) {
+      // Check immediately first
+      handleCheckStatus();
+      
+      // Then set up interval for subsequent checks
+      statusCheckInterval.current = setInterval(() => {
+        handleCheckStatus();
+      }, 5000); // Check every 5 seconds
+      
+      return () => {
+        if (statusCheckInterval.current) {
+          clearInterval(statusCheckInterval.current);
+        }
+      };
+    }
+  }, [paymentDialogOpen, orderId, autoCheckActive]);
+
+  // Handle payment success or failure
+  useEffect(() => {
+    if (paymentStatus === 'success') {
+      // Stop checking when payment is successful
+      if (statusCheckInterval.current) {
+        clearInterval(statusCheckInterval.current);
+      }
+      
+      // Refresh profile after successful payment
+      setTimeout(async () => {
+        try {
+          const profile = await getCurrentUserProfile();
+          setUserProfile(profile);
+        } catch (error) {
+          console.error('Failed to refresh profile after payment:', error);
+        }
+      }, 1000);
+      
+      // Auto-close dialog and refresh transactions after 3 seconds
+      setTimeout(() => {
+        setPaymentDialogOpen(false);
+        loadTransactions();
+      }, 3000);
+    }
+  }, [paymentStatus, toast]);
+
+  const handleCreditAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseInt(e.target.value);
+    if (!isNaN(value) && value >= 1 && value <= 10) {
+      setCreditAmount(value);
+    }
+  };
+
+  const handlePurchase = async () => {
+    try {
+      setLoading(true);
+      setPaymentStatus(null);
+      
+      const result = await createCreditPurchase(creditAmount);
+      setPaymentUrl(result.paymentUrl);
+      setOrderId(result.orderId);
+      
+      // Open payment dialog
+      setPaymentDialogOpen(true);
+      // Start auto-checking
+      setAutoCheckActive(true);
+      
+      toast({
+        title: 'Purchase created!',
+        description: 'Please complete your payment to receive credits.',
+      });
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Failed to create purchase',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCheckStatus = async () => {
+    if (!orderId) return;
+    
+    try {
+      setCheckingStatus(true);
+      const result = await checkPaymentStatus(orderId);
+      setPaymentStatus(result.status);
+      
+      if (result.status === 'success') {
+        toast({
+          title: 'Payment successful!',
+          description: `${result.creditAmount} credits have been added to your account.`,
+        });
+        
+        // Stop auto-checking
+        if (statusCheckInterval.current) {
+          clearInterval(statusCheckInterval.current);
+          setAutoCheckActive(false);
+        }
+      } else if (result.status === 'pending') {
+        // Continue checking
+      } else if (result.status === 'failed') {
+        toast({
+          title: 'Payment failed',
+          description: 'The payment was not successful.',
+          variant: 'destructive',
+        });
+        
+        // Stop auto-checking
+        if (statusCheckInterval.current) {
+          clearInterval(statusCheckInterval.current);
+          setAutoCheckActive(false);
+        }
+      }
+    } catch (error) {
+      console.error('Error checking payment status:', error);
+      // Don't show error toast during auto-checking to avoid spamming the user
+      if (!autoCheckActive) {
+        toast({
+          title: 'Error',
+          description: error instanceof Error ? error.message : 'Failed to check payment status',
+          variant: 'destructive',
+        });
+      }
+    } finally {
+      setCheckingStatus(false);
+    }
+  };
+
+  const loadTransactions = async () => {
+    try {
+      setLoadingTransactions(true);
+      const transactions = await getTransactionHistory();
+      setTransactions(transactions);
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Failed to load transactions',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoadingTransactions(false);
+    }
+  };
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'success':
+        return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800"><Check className="w-3 h-3 mr-1" /> Completed</span>;
+      case 'pending':
+        return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800"><Loader2 className="w-3 h-3 mr-1 animate-spin" /> Pending</span>;
+      case 'failed':
+        return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800"><X className="w-3 h-3 mr-1" /> Failed</span>;
+      default:
+        return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">Unknown</span>;
+    }
+  };
+
+  const renderPaymentStatusContent = () => {
+    switch (paymentStatus) {
+      case 'success':
+        return (
+          <div className="flex flex-col items-center justify-center p-6">
+            <Check className="h-16 w-16 text-green-500 mb-4" />
+            <h3 className="text-xl font-semibold mb-2">Payment Successful!</h3>
+            <p className="text-center mb-4">
+              {creditAmount} credits have been added to your account.
+            </p>
+            <p className="text-sm text-gray-500">This dialog will close automatically in a few seconds.</p>
+          </div>
+        );
+      case 'failed':
+        return (
+          <div className="flex flex-col items-center justify-center p-6">
+            <X className="h-16 w-16 text-red-500 mb-4" />
+            <h3 className="text-xl font-semibold mb-2">Payment Failed</h3>
+            <p className="text-center mb-4">
+              Your payment could not be processed. Please try again.
+            </p>
+            <Button 
+              variant="outline" 
+              onClick={() => setPaymentDialogOpen(false)}
+            >
+              Close
+            </Button>
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <>
+      <div className="container mx-auto py-10">
+        <h1 className="text-3xl font-bold mb-6">Buy Credits</h1>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Purchase Credits</CardTitle>
+              <CardDescription>
+                Each credit costs 1,000 VND. You can buy between 1 and 10 credits at a time.
+                {userProfile && (
+                  <div className="mt-2 text-sm font-medium">
+                    Current balance: <span className="font-bold">{userProfile.credit || 0}</span> credits
+                  </div>
+                )}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="grid grid-cols-3 items-center gap-4">
+                  <Label htmlFor="creditAmount" className="text-right">
+                    Amount
+                  </Label>
+                  <Input
+                    id="creditAmount"
+                    type="number"
+                    min={1}
+                    max={10}
+                    value={creditAmount}
+                    onChange={handleCreditAmountChange}
+                    className="col-span-2"
+                  />
+                </div>
+                
+                <div className="flex justify-between items-center pt-2">
+                  <div>
+                    <p className="text-sm font-medium">Total Cost:</p>
+                    <p className="text-2xl font-bold">{creditAmount * 1000} VND</p>
+                  </div>
+                  <Button onClick={handlePurchase} disabled={loading}>
+                    {loading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Processing
+                      </>
+                    ) : (
+                      <>
+                        <CreditCard className="mr-2 h-4 w-4" />
+                        Buy Now
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader>
+              <CardTitle>Transaction History</CardTitle>
+              <CardDescription>
+                Your recent credit purchases and their status.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button 
+                variant="outline" 
+                className="mb-4" 
+                onClick={loadTransactions}
+                disabled={loadingTransactions}
+              >
+                {loadingTransactions ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Loading...
+                  </>
+                ) : (
+                  <>
+                    <RefreshCw className="mr-2 h-4 w-4" />
+                    Load Transactions
+                  </>
+                )}
+              </Button>
+              
+              {transactions.length === 0 ? (
+                <div className="text-center py-10 text-gray-500">
+                  {loadingTransactions ? 'Loading transactions...' : 'No transactions found. Make a purchase to see it here.'}
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {transactions.map((transaction) => (
+                    <div key={transaction._id} className="border rounded-lg p-3">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <p className="text-sm font-medium">
+                            {transaction.creditAmount} Credits
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            {new Date(transaction.createdAt).toLocaleString()}
+                          </p>
+                        </div>
+                        <div>
+                          {getStatusBadge(transaction.status)}
+                        </div>
+                      </div>
+                      <Separator className="my-2" />
+                      <div className="flex justify-between text-xs text-gray-500">
+                        <span>Amount: {transaction.amount} VND</span>
+                        <span>Order ID: {transaction.orderId.substring(transaction.orderId.length - 6)}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
+      {/* Payment Dialog with iframe */}
+      <Dialog open={paymentDialogOpen} onOpenChange={setPaymentDialogOpen}>
+        <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-auto">
+          <DialogHeader>
+            <DialogTitle>MoMo Payment</DialogTitle>
+          </DialogHeader>
+          
+          {paymentStatus === 'pending' || paymentStatus === null ? (
+            <div className="space-y-4">
+              {/* Status indicators */}
+              <div className="flex items-center justify-center mb-2">
+                {autoCheckActive && (
+                  <div className="flex items-center text-amber-600 text-sm">
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Automatically checking payment status...
+                  </div>
+                )}
+              </div>
+              
+              {/* Payment iframe */}
+              {paymentUrl && (
+                <div className="h-[500px] w-full">
+                  <iframe
+                    src={paymentUrl}
+                    className="w-full h-full border-0 rounded-md"
+                    title="MoMo Payment"
+                  />
+                </div>
+              )}
+              
+              {/* Manual check button */}
+              <div className="flex justify-end">
+                <Button
+                  variant="outline"
+                  onClick={handleCheckStatus}
+                  disabled={checkingStatus}
+                >
+                  {checkingStatus ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Checking...
+                    </>
+                  ) : (
+                    <>
+                      <RefreshCw className="mr-2 h-4 w-4" />
+                      Check Status Manually
+                    </>
+                  )}
+                </Button>
+              </div>
+              
+              <div className="bg-amber-50 p-3 rounded-md text-sm text-amber-800">
+                <AlertCircle className="h-4 w-4 inline mr-2" />
+                After completing your payment in the MoMo app or website, you can close this dialog. Your credits will be added automatically when the payment is confirmed.
+              </div>
+            </div>
+          ) : (
+            renderPaymentStatusContent()
+          )}
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+}

@@ -3,6 +3,7 @@ import { auth0 } from '@/lib/auth0';
 
 const DISPATCH_URL = process.env.NEXT_PUBLIC_DISPATCH_URL || 'http://localhost:3333';
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export async function GET(request: NextRequest) {
   try {
     const session = await auth0.getSession();

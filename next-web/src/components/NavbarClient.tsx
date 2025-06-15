@@ -7,7 +7,7 @@ import React, { useEffect } from 'react'
 import { Button } from './ui/button'
 
 
-import { Bell, MessageCircle, Home, ShieldCheck } from "lucide-react";
+import { Bell, MessageCircle, Home, ShieldCheck, CreditCard } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -35,6 +35,7 @@ import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar'
 import { AppRouterInstance } from 'next/dist/shared/lib/app-router-context.shared-runtime'
 import { useDispatch } from 'react-redux'
 import { setProfile } from '@/store/accountSlice'
+// import { profile } from 'console'
 
 
 const LogoutHandler = (router: AppRouterInstance) => {
@@ -161,12 +162,21 @@ const LogginedMenu = ({accountProfile}: {accountProfile?: AccountProfile}) => {
             Following & Followers
           </DropdownMenuItem>
           <DropdownMenuSeparator className="bg-primary-200" />
-          <DropdownMenuItem
+          {
+          accountProfile?.isAdmin&&<DropdownMenuItem
             className="cursor-pointer hover:!bg-primary-700 hover:!text-primary-100"
             onClick={() => router.push('/admin')}
           >
             Settings
             <ShieldCheck className="h-6 w-6" />
+          </DropdownMenuItem>
+          }
+          <DropdownMenuItem
+            className="cursor-pointer hover:!bg-primary-700 hover:!text-primary-100"
+            onClick={() => router.push('/buy-credits')}
+          >
+            Buy credits
+            <CreditCard className="h-6 w-6" />
           </DropdownMenuItem>
           <DropdownMenuItem
             className="cursor-pointer hover:!bg-primary-700 hover:!text-primary-100"

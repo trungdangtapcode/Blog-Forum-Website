@@ -35,7 +35,8 @@ export class PaymentController {
   async checkStatus(@Param('orderId') orderId: string) {
     return this.paymentService.checkTransactionStatus(orderId);
   }
-    @Get('transactions')
+  
+  @Get('transactions')
   @UseGuards(CachedAuth0Guard)
   async getUserTransactions(@Req() req: Request & { user: any }) {
     const email = req.user.email;

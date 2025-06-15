@@ -39,8 +39,9 @@ export async function checkPaymentStatus(orderId: string) {
       const errorData = await response.json();
       throw new Error(errorData.error || 'Failed to check payment status');
     }
-
-    return await response.json();
+    const data = await response.json();
+    console.log('data ssr from /api/payment/check-status/',data)
+    return data;
   } catch (error) {
     console.error('Error checking payment status:', error);
     throw error;

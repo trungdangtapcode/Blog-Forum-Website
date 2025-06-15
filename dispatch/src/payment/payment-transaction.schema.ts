@@ -41,6 +41,12 @@ export class PaymentTransaction extends Document {
   
   @Prop({ type: Number, default: 0 })
   retryCount?: number;
+  
+  @Prop({ type: String, required: false })
+  transactionId?: string;
+  
+  @Prop({ type: String, required: false })
+  failReason?: string;
 }
 
 export const PaymentTransactionSchema = SchemaFactory.createForClass(PaymentTransaction);

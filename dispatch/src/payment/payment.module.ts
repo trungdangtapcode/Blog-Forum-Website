@@ -6,7 +6,8 @@ import { PaymentTransaction, PaymentTransactionSchema } from './payment-transact
 import { AccountModule } from '../account/account.module';
 import { CachedAuth0Guard } from '../account/guards/cached-auth0.guard';
 
-@Module({  imports: [
+@Module({  
+  imports: [
     MongooseModule.forFeature([
       { name: PaymentTransaction.name, schema: PaymentTransactionSchema }
     ]),
