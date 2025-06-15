@@ -37,6 +37,7 @@ export default function AdminPayments() {
   const [loading, setLoading] = useState<boolean>(false);
   const [retrying, setRetrying] = useState<boolean>(false);
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [checkingAdmin, setCheckingAdmin] = useState<boolean>(true);
 
   useEffect(() => {

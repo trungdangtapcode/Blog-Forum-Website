@@ -5,7 +5,8 @@ import { MessagesList } from '@/components/ui/MessagesList';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 
-const MessagesClient = () => {  return (
+const MessagesClient = () => {  
+  return (
     <div className="container mx-auto px-4 py-10 max-w-4xl">
       <Link href="/posts" className="inline-flex items-center text-primary-600 hover:text-primary-800 mb-6">
         <ArrowLeft className="mr-2 h-4 w-4" /> Back to Posts

@@ -15,7 +15,7 @@ enum PaymentStatus {
   ERROR = 'error',
 }
 
-export default function PaymentResult() {
+export default function PaymentResults() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [status, setStatus] = useState<PaymentStatus>(PaymentStatus.LOADING);
