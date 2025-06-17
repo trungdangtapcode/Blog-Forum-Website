@@ -8,7 +8,7 @@ const Layout = ({children}: {
 	children: React.ReactNode
 }) => {
 
-  	return (
+	return (
 	  <div className='h-full w-full'>
 	  	<main className={`h-full flex w-full flex-col`}>
 		<React.Suspense fallback={<div className="p-6 text-center">Loading payment...</div>}>
