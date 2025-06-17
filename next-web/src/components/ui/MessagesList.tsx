@@ -58,12 +58,13 @@ export function MessagesList() {
     // This is a placeholder - replace with your actual auth system
     const accountProfileStr = localStorage.getItem('accountProfile');
     let id: string | null = null;
-    if (accountProfileStr) {
+    if (accountProfileStr && false) {
       try {
         id = JSON.parse(accountProfileStr)._id;
       } catch (e) {
         console.error('Failed to parse accountProfile:', e);
       }
+      console.log('Local current user ID:', id);
       setCurrentUserId(id);
     } else {
       // fetch from /api/profile to get id

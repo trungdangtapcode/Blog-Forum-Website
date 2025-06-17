@@ -17,6 +17,18 @@ WataBlog is a full-stack blog and forum platform designed to connect writers, re
 - [Showcase](#showcase)
 - [Contributing](#contributing)
 
+| language | files | code | comment | blank | total |
+| :--- | ---: | ---: | ---: | ---: | ---: |
+| TypeScript | 132 | 14,893 | 5,504 | 2,362 | 22,759 |
+| TypeScript JSX | 113 | 13,833 | 437 | 1,478 | 15,748 |
+| Markdown | 5 | 296 | 2 | 106 | 404 |
+| PostCSS | 3 | 177 | 0 | 20 | 197 |
+| Python | 8 | 176 | 15 | 34 | 225 |
+| YAML | 2 | 103 | 0 | 2 | 105 |
+| JavaScript JSX | 5 | 72 | 12 | 17 | 101 |
+| JSON with Comments | 2 | 52 | 1 | 2 | 55 |
+| JavaScript | 3 | 44 | 0 | 5 | 49 |
+
 ## 🏗️ Architecture Overview
 
 The project follows a modern microservices architecture:
@@ -232,9 +244,7 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
-## 📄 License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
+## 📄 Licens
 
 ---
 

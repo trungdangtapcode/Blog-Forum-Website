@@ -13,7 +13,8 @@ import { CachedAuth0Guard } from '../account/guards/cached-auth0.guard';
     ]),
     AccountModule
   ],
-  controllers: [PaymentController],  providers: [
+  controllers: [PaymentController],  
+  providers: [
     PaymentService,
     CachedAuth0Guard
   ],
