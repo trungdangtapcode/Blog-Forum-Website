@@ -123,9 +123,11 @@ export function MessagesList() {
   const handleSelectConversation = async (userId: string, index: number) => {
     setActiveConversation(userId);
     setLoading(true);
+    index = -1;
     try {
       if (index!=-1){
         // console.log('message current index:',index);
+        console.log('message name array conversation:',arrayName);
         setCurrentAvatar(arrayAvatar[index] || '/default-avatar.png');
         setCurrentName(arrayName[index] || 'Unknown User');
       } else {
