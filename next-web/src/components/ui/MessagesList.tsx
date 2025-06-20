@@ -60,7 +60,9 @@ export function MessagesList() {
     let id: string | null = null;
     if (accountProfileStr && false) {
       try {
-        id = JSON.parse(accountProfileStr)._id;
+        if (accountProfileStr !== null) {
+          id = JSON.parse(accountProfileStr!)?._id;
+        }
       } catch (e) {
         console.error('Failed to parse accountProfile:', e);
       }
